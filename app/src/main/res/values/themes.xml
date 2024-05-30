@@ -2,7 +2,24 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.SantaAnaNorteApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/negro</item>
+
+        <item name="colorSecondary">@color/rojoF44336</item>
+        <item name="colorSecondaryVariant">@color/gris616161</item>
+        <item name="colorOnSecondary">@color/rojoF44336</item>
+
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+
+        <item name="android:colorPrimaryDark">@color/negro</item>
+        <item name="android:textColorPrimary">@color/bottomNavigationItemColor</item>
+        <item name="bottomNavigationStyle">@style/AppBottomNavigationView</item>
+
+        <item name="android:popupMenuStyle">@style/PopupMenu</item>
+
     </style>
 
     <style name="Theme.SantaAnaNorteApp" parent="Base.Theme.SantaAnaNorteApp" />
@@ -15,10 +32,69 @@
         <!-- Puedes quitar el atributo colorPrimary aquí -->
         <item name="android:background">@drawable/codigo_boton_redondeado_v1</item>
         <item name="android:textColor">@color/c_blanco</item>
-        <item name="backgroundTint">@color/c_negro</item>
+        <item name="backgroundTint">@color/c_azulv1</item>
+    </style>
+
+    <!-- ESTO LO LLEVARA TODOS LOS TEXT INPUT LAYOUT -->
+    <style name="Text_Input_Layout_Estilo_v1" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <!-- Otros atributos de estilo aquí -->
+        <item name="android:background">@color/blanco</item>
+        <item name="hintTextColor">@color/gris616161</item>
+        <item name="boxBackgroundColor">@android:color/transparent</item>
+        <item name="cursorColor">@color/colorPrimary</item>
+        <item name="boxStrokeColor">@color/gris616161</item>
+        <item name="boxStrokeWidth">2dp</item>
     </style>
 
 
+
+    <!-- ESTO LO LLEVARA TODOS LOS TEXT INPUT LAYOUT PARA LOS ERRORES -->
+    <style name="Text_Input_Layout_Error_Apariencia" parent="@android:style/TextAppearance">
+        <item name="errorTextColor">@color/rojoF44336</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- ESTO LO LLEVARA TODOS LOS INPUT EDIT TEXT -->
+    <style name="Input_Edit_Text_Tema" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="android:textColor">@color/negro</item>
+    </style>
+
+    <!-- LO LLEVA TODOS LOS TEXT INPUT EDIT TEXT PARA EL app:hintTextAppearance -->
+    <style name="Input_Edit_Text_Hint_Input" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+
+
+    <style name="AppBottomNavigationView" parent="Widget.Design.BottomNavigationView">
+        <!-- Configurar el color de fondo en modo claro -->
+        <item name="android:background">@color/colorPrimary</item>
+
+        <!-- Configurar el color del texto en modo claro -->
+        <item name="itemTextColor">@color/colorAccent</item>
+
+        <!-- Configurar el color del texto seleccionado en modo claro -->
+        <item name="itemTextAppearanceActive">@style/AppBottomNavigationView.ActiveTextAppearance</item>
+
+        <!-- Configurar el color del texto no seleccionado en modo claro -->
+        <item name="itemTextAppearanceInactive">@style/AppBottomNavigationView.InactiveTextAppearance</item>
+    </style>
+
+    <style name="AppBottomNavigationView.ActiveTextAppearance" parent="Widget.Design.BottomNavigationView">
+        <!-- Configurar el color del texto seleccionado en modo claro -->
+        <item name="android:textColor">@color/colorPrimaryDark</item>
+    </style>
+
+    <style name="AppBottomNavigationView.InactiveTextAppearance" parent="Widget.Design.BottomNavigationView">
+        <!-- Configurar el color del texto no seleccionado en modo claro -->
+        <item name="android:textColor">@color/bottomNavigationItemColor</item>
+    </style>
+
+
+    <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
+        <item name="android:popupBackground">@color/blanco</item>
+        <item name="android:textColor">@color/negro</item>
+    </style>
 
 
 </resources>

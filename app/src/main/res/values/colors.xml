@@ -11,4 +11,16 @@
     <color name="c_azulv3">#B4C5E4</color>
     <color name="c_blanco">#FBFFF1</color>
 
+
+    <color name="negro">#FF000000</color>
+    <color name="blanco">#FFFFFFFF</color>
+    <color name="gris616161">#616161</color>
+    <color name="rojoF44336">#f44336</color>
+    <color name="fondo_textos_negro_blanco_v1">#000000</color>
+    <color name="bottomNavigationItemColor">#000000</color>
+
+
+
+
+
 </resources>

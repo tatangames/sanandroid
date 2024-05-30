@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Estado cuando no está seleccionado -->
+    <item android:color="#A9A9A9" android:state_focused="false" />
+
+    <!-- Estado cuando está seleccionado -->
+    <item android:color="@color/gris616161" android:state_focused="true" />
+</selector>
