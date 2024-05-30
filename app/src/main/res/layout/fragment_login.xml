@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/c_blanco">
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/logoapp"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_marginTop="60dp"
+                android:contentDescription="@string/logo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/logo" />
+
+
+            <TextView
+                android:id="@+id/txtTitulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="500dp"
+                android:fontFamily="@font/liberation_sans_bold"
+                android:gravity="center"
+                android:lineSpacingExtra="12dp"
+                android:text="@string/app_name"
+                android:textColor="@color/c_negro"
+                android:textSize="24sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/logoapp" />
+
+
+            <LinearLayout
+                android:id="@+id/baseHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txtTitulo">
+
+                <ImageView
+                    android:id="@+id/imagenPais"
+                    android:layout_width="40dp"
+                    android:layout_height="35dp"
+                    android:src="@drawable/flag_elsalvador"
+                    tools:layout_editor_absoluteX="118dp"
+                    tools:layout_editor_absoluteY="263dp" />
+
+                <TextView
+                    android:id="@+id/textoPais"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/liberation_sans_bold"
+                    android:text="@string/el_salvador"
+                    android:textColor="@color/c_negro"
+                    android:layout_marginLeft="5dp"
+                    android:textSize="16sp"
+                    tools:layout_editor_absoluteX="195dp"
+                    tools:layout_editor_absoluteY="275dp" />
+
+            </LinearLayout>
+
+
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </ScrollView>
+
+
+
+
+
+</RelativeLayout>

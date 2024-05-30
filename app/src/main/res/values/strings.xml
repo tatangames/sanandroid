@@ -1,3 +1,23 @@
 <resources>
-    <string name="app_name">SantaAnaNorteApp</string>
+    <string name="app_name">NorteGo App</string>
+
+
+    <string name="permiso_requerido">Permiso requerido</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="ajustes">Ajustes</string>
+    <string name="permiso_camara_ajustes">Se requiere permiso de Cámara para tomar fotografías. Por favor habilitar en la configuración</string>
+    <string name="permiso_galeria_ajustes">Se requiere permiso para acceder a galería de imágenes. Por favor habilitar en la configuración</string>
+    <string name="permiso_denegado">Permiso denegado</string>
+    <string name="esta_aplicacion_camara">Esta aplicación necesita acceder a la cámara para tomar fotografía</string>
+    <string name="esta_aplicacion_galeria">Esta aplicación necesita acceder a la galería para seleccionar fotografía</string>
+    <string name="logo">Logo</string>
+    <string name="ingresar">Ingresar</string>
+    <string name="el_salvador">El Salvador</string>
+
+
+
+
+
+
+
 </resources>
