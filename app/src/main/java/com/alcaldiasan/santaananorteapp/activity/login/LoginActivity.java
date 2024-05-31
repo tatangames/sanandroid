@@ -18,7 +18,6 @@ import com.alcaldiasan.santaananorteapp.network.TokenManager;
 
 public class LoginActivity extends AppCompatActivity {
 
-
     private TokenManager tokenManager;
 
 
@@ -29,14 +28,14 @@ public class LoginActivity extends AppCompatActivity {
 
         tokenManager = TokenManager.getInstance(getSharedPreferences("prefs", MODE_PRIVATE));
 
-        if(!TextUtils.isEmpty(tokenManager.getToken().getId())){
+        if (!TextUtils.isEmpty(tokenManager.getToken().getId())) {
 
             // vista principal
             Intent intent = new Intent(this, PrincipalActivity.class);
             startActivity(intent);
             finish();
 
-        }else {
+        } else {
 
             // vista login
             getSupportFragmentManager().beginTransaction()
@@ -44,4 +43,5 @@ public class LoginActivity extends AppCompatActivity {
                     .commit();
         }
     }
+
 }

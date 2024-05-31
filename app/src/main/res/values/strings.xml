@@ -15,6 +15,24 @@
     <string name="el_salvador">El Salvador</string>
     <string name="numero_de_telefono">Número de teléfono</string>
     <string name="logotipo">Logotipo</string>
+    <string name="telefono_es_requerido">Teléfono es requerido</string>
+    <string name="el_numero_telefono_introducido">El teléfono introducido es demasiado corto</string>
+    <string name="nota">Nota</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="verificar_el_numero_de_telefono">Verificar el número de teléfono.</string>
+    <string name="editar">Editar</string>
+    <string name="verificar">Verificar</string>
+    <string name="ingresa_el_codigo_de_6">Ingresa el código de 6 dígitos que enviamos a tu número de teléfono</string>
+    <string name="guiones">--- ---</string>
+    <string name="reenviar_codigo">Reenviar Código</string>
+    <string name="error_intentar_de_nuevo">Error, intentar de nuevo</string>
+    <string name="bloqueado">Bloqueado</string>
+    <string name="numero_bloqueado">Número de teléfono bloqueado, contactar a la Administración</string>
+    <string name="salir">Salir</string>
+    <string name="cargando">Cargando...</string>
+
+
+
 
 
 
