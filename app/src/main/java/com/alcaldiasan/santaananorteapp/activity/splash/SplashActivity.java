@@ -1,6 +1,7 @@
 package com.alcaldiasan.santaananorteapp.activity.splash;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -34,6 +35,7 @@ import java.util.List;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
+@SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
 
 

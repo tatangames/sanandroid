@@ -1,6 +1,5 @@
 package com.alcaldiasan.santaananorteapp.activity.login;
 
-import static androidx.core.content.ContentProviderCompat.requireContext;
 
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -8,20 +7,20 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.activity.principal.PrincipalActivity;
@@ -38,15 +37,22 @@ import io.reactivex.schedulers.Schedulers;
 public class LoginVerificarActivity extends AppCompatActivity {
 
     private EditText codeEditText;
-    private TextView txtContador;
     private ProgressBar progressBar;
     private TokenManager tokenManager;
     private RelativeLayout rootRelative;
     private CountDownTimer countDownTimer;
     private ConstraintLayout vistaContraint;
-    private static final long TIMER_DURATION = 5000; // 60 seconds
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private ApiService service;
+
+    private TextView txtReintento;
+    private int segundos = 0;
+    private String telefono = "";
+    private boolean puedeResetearCronometro = false;
+    private boolean boolSeguroCheckCodigo = true;
+    private OnBackPressedDispatcher onBackPressedDispatcher;
+    private ImageView imgFlechaAtras;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +60,16 @@ public class LoginVerificarActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login_verificar);
 
         codeEditText = findViewById(R.id.codeEditText);
-        txtContador = findViewById(R.id.txtContador);
+        txtReintento = findViewById(R.id.txtContador);
         vistaContraint = findViewById(R.id.vistaConstraint);
         rootRelative = findViewById(R.id.root);
+        imgFlechaAtras = findViewById(R.id.imageView);
+
+        if (getIntent().getExtras() != null) {
+            Bundle bundle = getIntent().getExtras();
+            segundos = bundle.getInt("KEY_SEGUNDOS");
+            telefono = bundle.getString("KEY_PHONE");
+        }
 
         tokenManager = TokenManager.getInstance(getSharedPreferences("prefs", MODE_PRIVATE));
         service = RetrofitBuilder.createServiceNoAuth(ApiService.class);
@@ -70,6 +83,7 @@ public class LoginVerificarActivity extends AppCompatActivity {
         progressBar.getIndeterminateDrawable().setColorFilter(colorProgress, PorterDuff.Mode.SRC_IN);
         progressBar.setVisibility(View.GONE);
 
+        onBackPressedDispatcher = getOnBackPressedDispatcher();
 
         codeEditText.addTextChangedListener(new TextWatcher() {
             private boolean isUpdating = false;
@@ -88,7 +102,7 @@ public class LoginVerificarActivity extends AppCompatActivity {
                 isUpdating = true;
 
                 // Limpia los caracteres que no sean dígitos
-                String cleanString = s.toString().replaceAll("[^\\d]", "");
+                String cleanString = s.toString().replaceAll("\\D", "");
 
                 // Construye la nueva cadena con el espacio después del cuarto dígito
                 StringBuilder formattedString = new StringBuilder();
@@ -107,22 +121,44 @@ public class LoginVerificarActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-                // No se necesita acción aquí
+            public void afterTextChanged(Editable editable) {
+
+                String codigoIngresado = editable.toString();
+                // Hacer algo con el texto ingresado
+                if (!codigoIngresado.isEmpty()) {
+
+                    if(codigoIngresado.length() >= 7 && boolSeguroCheckCodigo){
+                        boolSeguroCheckCodigo = false;
+                        closeKeyboard();
+                        apiVerificarCodigo(codigoIngresado);
+                    }
+                }
             }
         });
 
-        apiInformacion();
+        txtReintento.setOnClickListener(v -> {
+              if(puedeResetearCronometro){
+                  puedeResetearCronometro = false;
+                  closeKeyboard();
+                  apiReenviarCodigo();
+              }
+        });
+
+        imgFlechaAtras.setOnClickListener(v -> {
+            onBackPressedDispatcher.onBackPressed();
+        });
+
+        startTimer();
     }
 
-    private void apiInformacion(){
+
+
+    private void apiReenviarCodigo(){
 
         progressBar.setVisibility(View.VISIBLE);
 
-        String telefono = codeEditText.getText().toString();
-
         compositeDisposable.add(
-                service.verificacionTelefono(telefono)
+                service.reintentoSMS(telefono)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .retry()
@@ -133,14 +169,13 @@ public class LoginVerificarActivity extends AppCompatActivity {
                                     if(apiRespuesta != null) {
 
                                         if(apiRespuesta.getSuccess() == 1) {
+                                           // usuario bloqueado
                                             usuarioBloqueado();
                                         }
-                                        else if (apiRespuesta.getSuccess() == 2){
-                                            vistaContraint.setVisibility(View.VISIBLE);
-
-
-                                        }
-                                        else{
+                                        else if(apiRespuesta.getSuccess() == 2){
+                                            segundos = apiRespuesta.getSegundos();
+                                            reiniciarContador();
+                                        }else{
                                             mensajeSinConexion();
                                         }
                                     }else{
@@ -152,6 +187,93 @@ public class LoginVerificarActivity extends AppCompatActivity {
                                 })
         );
     }
+
+
+    private void reiniciarContador(){
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
+        startTimer();
+    }
+
+
+    private void startTimer() {
+
+        String texto = getString(R.string.reintentar_en);
+        countDownTimer = new CountDownTimer(segundos, 1000) {
+            @Override
+            public void onTick(long tiempoRestante) {
+                // Actualizar el TextView con el tiempo restante
+                txtReintento.setText(texto + ": " + tiempoRestante / 1000);
+            }
+
+            @Override
+            public void onFinish() {
+                // Actualizar el TextView cuando el contador llega a cero
+                txtReintento.setText(getString(R.string.reenviar_codigo));
+                puedeResetearCronometro = true;
+            }
+        }.start();
+    }
+
+
+    private void apiVerificarCodigo(String codigo){
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        compositeDisposable.add(
+                service.verificarCodigo(telefono, codigo, "")
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .retry()
+                        .subscribe(apiRespuesta -> {
+
+                                    progressBar.setVisibility(View.GONE);
+                                    boolSeguroCheckCodigo = true;
+
+                                    if(apiRespuesta != null) {
+
+                                        if(apiRespuesta.getSuccess() == 1) {
+                                            // USUARIO BLOQUEADO
+                                            usuarioBloqueado();
+                                        }
+                                        else if(apiRespuesta.getSuccess() == 2){
+
+                                            // VERIFICO CORRECTAMENTE
+                                            tokenManager.guardarClienteTOKEN(apiRespuesta);
+                                            tokenManager.guardarClienteID(apiRespuesta);
+
+                                            Toasty.info(this, getString(R.string.verificado), Toasty.LENGTH_SHORT).show();
+                                            vistaPrincipal();
+                                        }
+                                        else if(apiRespuesta.getSuccess() == 3){
+                                            Toasty.info(this, getString(R.string.codigo_incorrecto), Toasty.LENGTH_SHORT).show();
+                                        }
+                                        else{
+                                            mensajeSinConexion();
+                                        }
+                                    }else{
+                                        mensajeSinConexion();
+                                    }
+                                },
+                                throwable -> {
+                                    boolSeguroCheckCodigo = true;
+                                    mensajeSinConexion();
+                                })
+        );
+    }
+
+    private void vistaPrincipal(){
+        // Siguiente Actvity
+        Intent intent = new Intent(this, PrincipalActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+
+
+
 
     private void usuarioBloqueado(){
         KAlertDialog pDialog = new KAlertDialog(this, KAlertDialog.ERROR_TYPE, false);
@@ -171,6 +293,7 @@ public class LoginVerificarActivity extends AppCompatActivity {
             sDialog.dismissWithAnimation();
             salirLoginVista();
         });
+
         pDialog.show();
     }
 
@@ -194,23 +317,6 @@ public class LoginVerificarActivity extends AppCompatActivity {
     }
 
 
-    private void startTimer() {
-
-
-        countDownTimer = new CountDownTimer(TIMER_DURATION, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                txtContador.setText("Resend code in " + millisUntilFinished / 1000 + " seconds");
-            }
-
-            @Override
-            public void onFinish() {
-                txtContador.setText("You can now resend the code.");
-
-            }
-        }.start();
-    }
-
     @Override
     protected void onDestroy() {
         compositeDisposable.clear();
@@ -219,4 +325,14 @@ public class LoginVerificarActivity extends AppCompatActivity {
             countDownTimer.cancel();
         }
     }
+
+    private void closeKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        View view = getCurrentFocus();
+
+        if (view != null) {
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
 }

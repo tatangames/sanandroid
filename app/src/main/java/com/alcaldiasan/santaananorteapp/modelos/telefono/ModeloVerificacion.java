@@ -7,16 +7,19 @@ public class ModeloVerificacion {
     @SerializedName("success")
     public int success;
     @SerializedName("canretry")
-    public boolean canRetry;
+    public int canRetry;
 
     @SerializedName("segundos")
     public int segundos;
+
+
+
 
     public int getSuccess() {
         return success;
     }
 
-    public boolean isCanRetry() {
+    public int getCanRetry() {
         return canRetry;
     }
 

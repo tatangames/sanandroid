@@ -18,13 +18,18 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/logosan"
+        android:icon="@mipmap/logof1"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/logosan_round"
+        android:roundIcon="@mipmap/logof1_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SantaAnaNorteApp"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
+        <activity
+            android:name=".activity.principal.PrincipalActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
         <activity
             android:name=".activity.login.LoginVerificarActivity"
             android:screenOrientation="portrait"

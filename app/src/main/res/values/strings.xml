@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NorteGo App</string>
+    <string name="app_name">NorteGo</string>
 
 
     <string name="permiso_requerido">Permiso requerido</string>
@@ -29,11 +29,12 @@
     <string name="bloqueado">Bloqueado</string>
     <string name="numero_bloqueado">Número de teléfono bloqueado, contactar a la Administración</string>
     <string name="salir">Salir</string>
-    <string name="cargando">Cargando...</string>
-
-
-
-
+    <string name="cargando">Cargando…</string>
+    <string name="verificando">Verificando</string>
+    <string name="reintentar_en">Reintentar en</string>
+    <string name="codigo_enviado">Código enviado</string>
+    <string name="codigo_incorrecto">Código incorrecto</string>
+    <string name="verificado">Verificado</string>
 
 
 

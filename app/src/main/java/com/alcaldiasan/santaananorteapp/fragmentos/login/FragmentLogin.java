@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +48,7 @@ public class FragmentLogin extends Fragment {
     private ApiService service;
     private ProgressBar progressBar;
     private RelativeLayout rootRelative;
+    private KAlertDialog progressVerificando;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -70,8 +72,7 @@ public class FragmentLogin extends Fragment {
 
 
         btnRegistro.setOnClickListener(v -> {
-           // verificar();
-            showProgressDialog();
+            verificar();
         });
 
         edtTelefono.addTextChangedListener(new TextWatcher() {
@@ -229,7 +230,15 @@ public class FragmentLogin extends Fragment {
                                         }
                                         else if (apiRespuesta.getSuccess() == 2){
 
-                                            Toasty.info(getContext(), "eee", Toasty.LENGTH_SHORT).show();
+                                            // SOLO CUANDO ES PERMITIDO Y ENVIO EL SMS, MOSTRAR TOAST
+                                            if(apiRespuesta.getCanRetry() == 1){
+                                                Toasty.success(getContext(), getString(R.string.codigo_enviado), Toasty.LENGTH_SHORT).show();
+                                            }
+
+                                            // LOS SEGUNDOS PARA EL CRONOMETRO
+                                            int segundos = apiRespuesta.getSegundos();
+
+                                            siguienteVista(segundos, telefono);
                                         }
                                         else{
                                             mensajeSinConexion();
@@ -266,6 +275,15 @@ public class FragmentLogin extends Fragment {
         pDialog.show();
     }
 
+    private void siguienteVista(int segundos, String telefono){
+
+        Intent intent = new Intent(getContext(), LoginVerificarActivity.class);
+        intent.putExtra("KEY_SEGUNDOS", segundos);
+        intent.putExtra("KEY_PHONE", telefono);
+
+        startActivity(intent);
+    }
+
     private void mensajeSinConexion(){
         progressBar.setVisibility(View.GONE);
         Toasty.error(getContext(), getString(R.string.error_intentar_de_nuevo)).show();
@@ -273,24 +291,20 @@ public class FragmentLogin extends Fragment {
 
 
 
-    private void redireccionar(Boolean canRetry, int segundos){
-        Intent intent = new Intent(getContext(), LoginVerificarActivity.class);
-        intent.putExtra("KEY_TELEFONO", edtTelefono.getText().toString());
-        startActivity(intent);
-    }
 
-    private KAlertDialog progressDialog;
+
+
     private void showProgressDialog() {
-        progressDialog = new KAlertDialog(getContext(), KAlertDialog.PROGRESS_TYPE, false);
-        progressDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        progressDialog.setTitleText(getString(R.string.cargando));
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        progressVerificando = new KAlertDialog(getContext(), KAlertDialog.PROGRESS_TYPE, false);
+        progressVerificando.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        progressVerificando.setTitleText(getString(R.string.verificando));
+        progressVerificando.setCancelable(false);
+        progressVerificando.show();
     }
 
-    private void hideProgressDialog() {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
+    private void hideProgressVerificando() {
+        if (progressVerificando != null && progressVerificando.isShowing()) {
+            progressVerificando.dismiss();
         }
     }
 
