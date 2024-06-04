@@ -20,6 +20,8 @@
 
         <item name="android:popupMenuStyle">@style/PopupMenu</item>
 
+        <item name="colorControlNormal">@color/c_blanco</item>
+
     </style>
 
     <style name="Theme.SantaAnaNorteApp" parent="Base.Theme.SantaAnaNorteApp" />

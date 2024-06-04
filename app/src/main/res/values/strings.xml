@@ -35,6 +35,16 @@
     <string name="codigo_enviado">Código enviado</string>
     <string name="codigo_incorrecto">Código incorrecto</string>
     <string name="verificado">Verificado</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="cerrar_sesion">Cerrar Sesión</string>
+    <string name="si">Si</string>
+    <string name="no">No</string>
+    <string name="servicios">Servicios</string>
+    <string name="codigo_para_nortego">Código para NorteGo:</string>
+
+
+
 
 
 

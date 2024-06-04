@@ -1,16 +1,24 @@
 package com.alcaldiasan.santaananorteapp.activity.login;
 
 
+import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.provider.Telephony;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -18,12 +26,16 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedDispatcher;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.activity.principal.PrincipalActivity;
+import com.alcaldiasan.santaananorteapp.extras.MessageListenerInterface;
+import com.alcaldiasan.santaananorteapp.extras.SmsReceiver;
 import com.alcaldiasan.santaananorteapp.network.ApiService;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
 import com.alcaldiasan.santaananorteapp.network.TokenManager;
@@ -34,7 +46,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
-public class LoginVerificarActivity extends AppCompatActivity {
+public class LoginVerificarActivity extends AppCompatActivity implements MessageListenerInterface {
 
     private EditText codeEditText;
     private ProgressBar progressBar;
@@ -52,6 +64,9 @@ public class LoginVerificarActivity extends AppCompatActivity {
     private boolean boolSeguroCheckCodigo = true;
     private OnBackPressedDispatcher onBackPressedDispatcher;
     private ImageView imgFlechaAtras;
+
+
+    private static final int READ_SMS_PERMISSION_CODE = 1;
 
 
     @Override
@@ -84,6 +99,9 @@ public class LoginVerificarActivity extends AppCompatActivity {
         progressBar.setVisibility(View.GONE);
 
         onBackPressedDispatcher = getOnBackPressedDispatcher();
+
+        SmsReceiver.bindListener(this);
+
 
         codeEditText.addTextChangedListener(new TextWatcher() {
             private boolean isUpdating = false;
@@ -150,6 +168,15 @@ public class LoginVerificarActivity extends AppCompatActivity {
 
         startTimer();
     }
+
+
+    // SETEAR EL CODIGO RECIBIDO POR SMS
+    @Override
+    public void messageReceived(String message) {
+        codeEditText.setText(message);
+    }
+
+
 
 
 
@@ -244,7 +271,7 @@ public class LoginVerificarActivity extends AppCompatActivity {
                                             tokenManager.guardarClienteTOKEN(apiRespuesta);
                                             tokenManager.guardarClienteID(apiRespuesta);
 
-                                            Toasty.info(this, getString(R.string.verificado), Toasty.LENGTH_SHORT).show();
+                                            Toasty.success(this, getString(R.string.verificado), Toasty.LENGTH_SHORT).show();
                                             vistaPrincipal();
                                         }
                                         else if(apiRespuesta.getSuccess() == 3){
@@ -321,6 +348,8 @@ public class LoginVerificarActivity extends AppCompatActivity {
     protected void onDestroy() {
         compositeDisposable.clear();
         super.onDestroy();
+
+
         if (countDownTimer != null) {
             countDownTimer.cancel();
         }

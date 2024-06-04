@@ -135,7 +135,7 @@ public class FragmentLogin extends Fragment {
                 boolSeguroKAlert = false;
                 new Handler().postDelayed(() -> {
                     boolSeguroKAlert = true;
-                }, 1000);
+                }, 2000);
 
                 KAlertDialog pDialog = new KAlertDialog(getContext(), KAlertDialog.WARNING_TYPE, false);
 

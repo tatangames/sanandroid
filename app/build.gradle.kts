@@ -68,6 +68,11 @@ dependencies {
     // manejo de permisos
     implementation("pub.devrel:easypermissions:3.0.0")
 
+
+    implementation("com.github.denzcoskun:ImageSlideshow:0.1.2")
+
+
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
