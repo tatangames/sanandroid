@@ -1,8 +1,8 @@
-package com.alcaldiasan.santaananorteapp.modelos.slider;
+package com.alcaldiasan.santaananorteapp.modelos.servicio;
 
 import com.google.gson.annotations.SerializedName;
 
-public class ModeloSlider {
+public class ModeloServicio {
 
     @SerializedName("id")
     public int id;
@@ -10,12 +10,8 @@ public class ModeloSlider {
     @SerializedName("imagen")
     public String imagen;
 
-
-
-    public ModeloSlider(int id, String imagen) {
-        this.id = id;
-        this.imagen = imagen;
-    }
+    @SerializedName("nombre")
+    public String nombre;
 
 
     public int getId() {
@@ -26,5 +22,7 @@ public class ModeloSlider {
         return imagen;
     }
 
-
+    public String getNombre() {
+        return nombre;
+    }
 }

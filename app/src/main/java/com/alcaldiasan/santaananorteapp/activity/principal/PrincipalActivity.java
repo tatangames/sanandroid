@@ -26,6 +26,8 @@ import com.alcaldiasan.santaananorteapp.network.TokenManager;
 import com.developer.kalert.KAlertDialog;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.Objects;
+
 public class PrincipalActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private TextView navNombre;
@@ -42,15 +44,18 @@ public class PrincipalActivity extends AppCompatActivity implements NavigationVi
         NavigationView navigationView = findViewById(R.id.nav_view);
         txtToolbar = findViewById(R.id.txtToolbar);
 
+        setSupportActionBar(toolbar);
+        // Eliminar el título por defecto
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+
         txtToolbar.setText(getString(R.string.app_name));
 
-        tokenManager = TokenManager.getInstance(getSharedPreferences("prefs", MODE_PRIVATE));
-
-        setSupportActionBar(toolbar);
         navigationView.setNavigationItemSelectedListener(this);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
+        tokenManager = TokenManager.getInstance(getSharedPreferences("prefs", MODE_PRIVATE));
 
         // COLOR DE LAS 3 LINEAS PARA ABRIR MENU LATERAL
         toggle.getDrawerArrowDrawable().setColor(getColor(R.color.c_blanco));
@@ -69,8 +74,8 @@ public class PrincipalActivity extends AppCompatActivity implements NavigationVi
     }
 
 
-    public void setActionBarTitle(String title) {
-        getSupportActionBar().setTitle(title);
+    public void setActionBarTitle(String titulo) {
+        txtToolbar.setText(titulo);
     }
 
     @Override

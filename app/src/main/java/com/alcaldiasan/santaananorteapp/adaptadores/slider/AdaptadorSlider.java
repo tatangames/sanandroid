@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.modelos.slider.ModeloSlider;
+import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
 import com.bumptech.glide.Glide;
 import com.smarteist.autoimageslider.SliderViewAdapter;
 
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AdaptadorSlider extends SliderViewAdapter<AdaptadorSlider.SliderAdapterVH> {
+
+    // ADAPTADOR PARA EL SLIDER PRINCIPAL
 
     private Context context;
     private ArrayList<ModeloSlider> mSliderItems;
@@ -27,10 +30,9 @@ public class AdaptadorSlider extends SliderViewAdapter<AdaptadorSlider.SliderAda
         this.mSliderItems = mSliderItems;
     }
 
-
     @Override
     public AdaptadorSlider.SliderAdapterVH onCreateViewHolder(ViewGroup parent) {
-        View inflate = LayoutInflater.from(parent.getContext()).inflate(R.layout.image_slider_layout_item, null);
+        View inflate = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_slider, null);
         return new AdaptadorSlider.SliderAdapterVH(inflate);
     }
 
@@ -39,12 +41,8 @@ public class AdaptadorSlider extends SliderViewAdapter<AdaptadorSlider.SliderAda
 
         ModeloSlider sliderItem = mSliderItems.get(position);
 
-        viewHolder.textViewDescription.setText(sliderItem.getNombre());
-        viewHolder.textViewDescription.setTextSize(16);
-        viewHolder.textViewDescription.setTextColor(Color.WHITE);
-
         Glide.with(viewHolder.itemView)
-                .load(R.drawable.flag_elsalvador)
+                .load(RetrofitBuilder.urlImagenes + sliderItem.getImagen())
                 .fitCenter()
                 .into(viewHolder.imageViewBackground);
 
@@ -61,16 +59,15 @@ public class AdaptadorSlider extends SliderViewAdapter<AdaptadorSlider.SliderAda
 
     static class SliderAdapterVH extends SliderViewAdapter.ViewHolder {
 
-        View itemView;
-        ImageView imageViewBackground;
-        ImageView imageGifContainer;
-        TextView textViewDescription;
+        private View itemView;
+        private ImageView imageViewBackground;
+        private ImageView imageGifContainer;
 
         public SliderAdapterVH(View itemView) {
             super(itemView);
             imageViewBackground = itemView.findViewById(R.id.iv_auto_image_slider);
             imageGifContainer = itemView.findViewById(R.id.iv_gif_container);
-            textViewDescription = itemView.findViewById(R.id.tv_auto_image_slider);
+
             this.itemView = itemView;
         }
     }
