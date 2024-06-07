@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.adaptadores.slider.AdaptadorSlider;
+import com.alcaldiasan.santaananorteapp.extras.IOnRecyclerViewClickListener;
 import com.alcaldiasan.santaananorteapp.fragmentos.principal.FragmentPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloServicio;
@@ -41,8 +42,10 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
     private RequestOptions opcionesGlide = new RequestOptions()
             .diskCacheStrategy(DiskCacheStrategy.NONE)
             .skipMemoryCache(true)
-            .placeholder(R.drawable.camaradefecto)
+            .placeholder(R.drawable.codigo_progress_anim)
+            .error(R.drawable.ic_error)
             .priority(Priority.HIGH);
+
 
     public AdaptadorServicio(Context context, List<ModeloServicio> modeloServicios, FragmentPrincipal fragmentPrincipal) {
         this.context = context;
@@ -78,8 +81,10 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
 
         holder.txtServicio.setText(miModelo.getNombre());
 
-
-
+        holder.setListener((view, po) -> {
+            // ENVIAR EL ID TIPO DE SERVICIO
+            fragmentPrincipal.servicioSeleccionado(miModelo.getIdTipoServicio());
+        });
     }
 
     @Override
@@ -91,16 +96,29 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
         }
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder{
+    public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         private TextView txtServicio;
         private ImageView imgServicio;
+
+        IOnRecyclerViewClickListener listener;
+
+        public void setListener(IOnRecyclerViewClickListener listener) {
+            this.listener = listener;
+        }
 
         public MyViewHolder(View itemView){
             super(itemView);
 
             imgServicio = itemView.findViewById(R.id.imgServicio);
             txtServicio = itemView.findViewById(R.id.txtServicio);
+
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            listener.onClick(v, getAdapterPosition());
         }
     }
 

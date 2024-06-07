@@ -48,7 +48,6 @@ public class FragmentLogin extends Fragment {
     private ApiService service;
     private ProgressBar progressBar;
     private RelativeLayout rootRelative;
-    private KAlertDialog progressVerificando;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -137,7 +136,9 @@ public class FragmentLogin extends Fragment {
                     boolSeguroKAlert = true;
                 }, 2000);
 
-                KAlertDialog pDialog = new KAlertDialog(getContext(), KAlertDialog.WARNING_TYPE, false);
+                KAlertDialog pDialog = new KAlertDialog(getContext(), KAlertDialog.CUSTOM_IMAGE_TYPE, false);
+
+                pDialog.setCustomImage(R.drawable.ic_informacion);
 
                 pDialog.setTitleText(getString(R.string.nota));
                 pDialog.setTitleTextGravity(Gravity.CENTER);
@@ -169,7 +170,9 @@ public class FragmentLogin extends Fragment {
 
             String mensaje = getString(R.string.verificar_el_numero_de_telefono) + "\n +503 " + telefono;
 
-            KAlertDialog pDialog = new KAlertDialog(getContext(), KAlertDialog.WARNING_TYPE, false);
+            KAlertDialog pDialog = new KAlertDialog(getContext(), KAlertDialog.CUSTOM_IMAGE_TYPE, false);
+
+            pDialog.setCustomImage(R.drawable.ic_informacion);
 
             pDialog.setTitleText("");
             pDialog.setTitleTextGravity(Gravity.CENTER);
@@ -272,6 +275,7 @@ public class FragmentLogin extends Fragment {
             sDialog.dismissWithAnimation();
 
         });
+
         pDialog.show();
     }
 
@@ -288,27 +292,6 @@ public class FragmentLogin extends Fragment {
         progressBar.setVisibility(View.GONE);
         Toasty.error(getContext(), getString(R.string.error_intentar_de_nuevo)).show();
     }
-
-
-
-
-
-
-    private void showProgressDialog() {
-        progressVerificando = new KAlertDialog(getContext(), KAlertDialog.PROGRESS_TYPE, false);
-        progressVerificando.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        progressVerificando.setTitleText(getString(R.string.verificando));
-        progressVerificando.setCancelable(false);
-        progressVerificando.show();
-    }
-
-    private void hideProgressVerificando() {
-        if (progressVerificando != null && progressVerificando.isShowing()) {
-            progressVerificando.dismiss();
-        }
-    }
-
-
 
 
     @Override

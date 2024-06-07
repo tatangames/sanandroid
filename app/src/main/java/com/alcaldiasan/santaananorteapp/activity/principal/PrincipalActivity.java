@@ -121,7 +121,9 @@ public class PrincipalActivity extends AppCompatActivity implements NavigationVi
                 boolSeguroAlertCerrar = true;
             }, 2000);
 
-            KAlertDialog pDialog = new KAlertDialog(this, KAlertDialog.WARNING_TYPE, false);
+            KAlertDialog pDialog = new KAlertDialog(this, KAlertDialog.CUSTOM_IMAGE_TYPE, false);
+
+            pDialog.setCustomImage(R.drawable.ic_informacion);
 
             pDialog.setTitleText(getString(R.string.cerrar_sesion));
             pDialog.setTitleTextGravity(Gravity.CENTER);

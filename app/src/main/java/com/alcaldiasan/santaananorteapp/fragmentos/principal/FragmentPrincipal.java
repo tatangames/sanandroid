@@ -2,9 +2,17 @@ package com.alcaldiasan.santaananorteapp.fragmentos.principal;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import static androidx.browser.customtabs.CustomTabsClient.getPackageName;
+
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,20 +20,25 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alcaldiasan.santaananorteapp.R;
+import com.alcaldiasan.santaananorteapp.activity.login.LoginActivity;
 import com.alcaldiasan.santaananorteapp.adaptadores.principal.AdaptadorPrincipal;
-import com.alcaldiasan.santaananorteapp.adaptadores.servicio.AdaptadorServicio;
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
+import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloServicio;
 import com.alcaldiasan.santaananorteapp.network.ApiService;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
 import com.alcaldiasan.santaananorteapp.network.TokenManager;
+import com.developer.kalert.KAlertDialog;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -44,6 +57,23 @@ public class FragmentPrincipal extends Fragment {
     private RecyclerView recyclerView;
     private AdaptadorPrincipal adaptadorPrincipal;
     private ArrayList<ModeloVistaPrincipal> elementos = new ArrayList<>();;
+
+    // VERSION DE LA APLICACION
+    private int versionApp = -1;
+
+    // PARA SABER SI EL SERVICIO ES NUEVO
+    private List<ModeloServicio> services = new ArrayList<>();
+
+
+
+    // FORMA PARA MOSTRAR AL USUARIO SI HAY UN NUEVO TIPO SERVICIO Y QUE ACTUALICE APLICACION
+
+    // 1- SERVICIO BASICO
+    private static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1);
+
+    private boolean boolCartelUpdateServicio = true;
+
+
 
 
     @Override
@@ -68,6 +98,16 @@ public class FragmentPrincipal extends Fragment {
         progressBar.setVisibility(View.GONE);
 
         shimmerFrameLayout.startShimmer();
+
+        // SI DA ERROR, EL SERVIDOR TOMARA EL -1 SU VALOR POR DEFECTO, Y NO MOSTRARA ALERTA
+        // DE NUEVA ACTUALIZACION
+        try {
+            PackageInfo pInfo = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0);
+            versionApp = pInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
         apiSolicitarDatos();
 
         return vista;
@@ -78,7 +118,7 @@ public class FragmentPrincipal extends Fragment {
     private void apiSolicitarDatos(){
 
         compositeDisposable.add(
-                service.listadoPrincipal()
+                service.listadoPrincipal(versionApp)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .retry()
@@ -87,15 +127,27 @@ public class FragmentPrincipal extends Fragment {
                             if(apiRespuesta != null) {
 
                                 if(apiRespuesta.getSuccess() == 1) {
+                                   // USUARIO BLOQUEADO
+                                    usuarioBloqueado();
+
+                                }
+                                else if(apiRespuesta.getSuccess() == 2) {
 
                                     elementos.add(new ModeloVistaPrincipal(ModeloVistaPrincipal.TIPO_SLIDER, apiRespuesta.getModeloSliders(), null));
                                     elementos.add(new ModeloVistaPrincipal(ModeloVistaPrincipal.TIPO_RECYCLER, null, apiRespuesta.getModeloServicio()));
+
+
+                                    for (ModeloServicio mm : apiRespuesta.getModeloServicio()){
+                                        services.add(new ModeloServicio(mm.getIdTipoServicio()));
+                                    }
 
                                     adaptadorPrincipal = new AdaptadorPrincipal(getContext(), elementos, this);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
                                     recyclerView.setAdapter(adaptadorPrincipal);
 
-                                    esperarInicio();
+                                    int hayUpdate = apiRespuesta.getCodeandroid();
+
+                                    esperarInicio(hayUpdate);
                                 }
                                 else{
                                     mensajeSinConexion();
@@ -110,13 +162,153 @@ public class FragmentPrincipal extends Fragment {
         );
     }
 
-    private void esperarInicio(){
+    private void esperarInicio(int hayUpdate){
         new Handler().postDelayed(() -> {
             shimmerFrameLayout.stopShimmer();
             contenedorShimmer.setVisibility(View.GONE);
             contenedorPrincipal.setVisibility(View.VISIBLE);
+
+            if(hayUpdate == 1){
+                dialogoActualizacionServidor();
+            }
+
         }, 500);
     }
+
+    // PARA CUANDO EL SERVIDOR ME DICE QUE HAY UNA NUEVA ACTUALIZACION
+    private void dialogoActualizacionServidor(){
+
+        KAlertDialog pDialog = new KAlertDialog(getContext(), KAlertDialog.CUSTOM_IMAGE_TYPE, false);
+
+        pDialog.setCustomImage(R.drawable.ic_informacion);
+
+        pDialog.setTitleText(getString(R.string.nueva_actualizacion));
+        pDialog.setTitleTextGravity(Gravity.CENTER);
+        pDialog.setTitleTextSize(19);
+
+        pDialog.setContentText(getString(R.string.actualizar_nueva_version));
+        pDialog.setContentTextAlignment(View.TEXT_ALIGNMENT_CENTER, Gravity.START);
+        pDialog.setContentTextSize(17);
+
+        pDialog.setCancelable(false);
+        pDialog.setCanceledOnTouchOutside(false);
+
+        pDialog.confirmButtonColor(R.drawable.codigo_kalert_dialog_corners_confirmar);
+        pDialog.setConfirmClickListener(getString(R.string.actualizar), sDialog -> {
+            sDialog.dismissWithAnimation();
+            redireccionarGooglePlay();
+        });
+
+        pDialog.cancelButtonColor(R.drawable.codigo_kalert_dialog_corners_cancelar);
+        pDialog.setCancelClickListener(getString(R.string.no), sDialog -> {
+            sDialog.dismissWithAnimation();
+
+        });
+
+        pDialog.show();
+    }
+
+    private void redireccionarGooglePlay(){
+
+        try {
+            String playStoreLink = "https://play.google.com/store/apps/details?id=com.alcaldiasan.santaananorteapp";
+
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(playStoreLink));
+            startActivity(intent);
+        } catch (Exception ignored) {
+
+        }
+    }
+
+
+    private void usuarioBloqueado(){
+        KAlertDialog pDialog = new KAlertDialog(getContext(), KAlertDialog.ERROR_TYPE, false);
+
+        pDialog.setTitleText(getString(R.string.bloqueado));
+        pDialog.setTitleTextGravity(Gravity.CENTER);
+        pDialog.setTitleTextSize(19);
+
+        pDialog.setContentText(getString(R.string.numero_bloqueado));
+        pDialog.setContentTextAlignment(View.TEXT_ALIGNMENT_CENTER, Gravity.START);
+        pDialog.setContentTextSize(17);
+
+        pDialog.setCancelable(false);
+        pDialog.setCanceledOnTouchOutside(false);
+        pDialog.confirmButtonColor(R.drawable.codigo_kalert_dialog_corners_confirmar);
+        pDialog.setConfirmClickListener(getString(R.string.aceptar), sDialog -> {
+            sDialog.dismissWithAnimation();
+            salir();
+        });
+        pDialog.show();
+    }
+
+
+    private void salir(){
+        tokenManager.deletePreferences();
+        Intent intent = new Intent(getContext(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
+
+    public void servicioSeleccionado(int tipo){
+
+        // Verificar si el tipo de servicio está soportado
+        if (SUPPORTED_TYPES.contains(tipo)) {
+
+            if(tipo == 1){
+                // SERVICIO BASICO
+
+
+            }
+
+        }else{
+            dialogoNuevoServicioDisponible();
+        }
+    }
+
+
+    // PARA CUANDO NO ESTA EL SERVICIO QUE QUIERO ACCEDER
+    private void dialogoNuevoServicioDisponible(){
+
+        if(boolCartelUpdateServicio){
+            boolCartelUpdateServicio = false;
+
+            new Handler().postDelayed(() -> {
+                boolCartelUpdateServicio = true;
+            }, 2000);
+
+            KAlertDialog pDialog = new KAlertDialog(getContext(), KAlertDialog.CUSTOM_IMAGE_TYPE, false);
+
+            pDialog.setCustomImage(R.drawable.ic_informacion);
+
+            pDialog.setTitleText(getString(R.string.nueva_actualizacion));
+            pDialog.setTitleTextGravity(Gravity.CENTER);
+            pDialog.setTitleTextSize(19);
+
+            pDialog.setContentText(getString(R.string.por_favor_actualizar_la_app));
+            pDialog.setContentTextAlignment(View.TEXT_ALIGNMENT_CENTER, Gravity.START);
+            pDialog.setContentTextSize(17);
+
+            pDialog.setCancelable(false);
+            pDialog.setCanceledOnTouchOutside(false);
+
+            pDialog.confirmButtonColor(R.drawable.codigo_kalert_dialog_corners_confirmar);
+            pDialog.setConfirmClickListener(getString(R.string.actualizar), sDialog -> {
+                sDialog.dismissWithAnimation();
+                redireccionarGooglePlay();
+            });
+
+            pDialog.cancelButtonColor(R.drawable.codigo_kalert_dialog_corners_cancelar);
+            pDialog.setCancelClickListener(getString(R.string.no), sDialog -> {
+                sDialog.dismissWithAnimation();
+
+            });
+
+            pDialog.show();
+        }
+    }
+
 
 
     private void mensajeSinConexion(){

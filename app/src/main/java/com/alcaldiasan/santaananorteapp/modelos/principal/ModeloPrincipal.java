@@ -13,6 +13,13 @@ public class ModeloPrincipal {
     @SerializedName("success")
     public int success;
 
+    @SerializedName("codeandroid")
+    public int codeandroid;
+
+    public int getCodeandroid() {
+        return codeandroid;
+    }
+
     @SerializedName("slider")
     public ArrayList<ModeloSlider> modeloSliders;
 

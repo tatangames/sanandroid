@@ -46,9 +46,7 @@ public class AdaptadorSlider extends SliderViewAdapter<AdaptadorSlider.SliderAda
                 .fitCenter()
                 .into(viewHolder.imageViewBackground);
 
-        viewHolder.itemView.setOnClickListener(v -> {
-            Toast.makeText(context, "This is item in position " + position, Toast.LENGTH_SHORT).show();
-        });
+
     }
 
     @Override

@@ -33,8 +33,9 @@ public interface ApiService {
 
 
     // LISTADO PRINCIPAL DE LA APLICACION
-    @GET("app/principal/listado")
-    Observable<ModeloPrincipal> listadoPrincipal();
+    @POST("app/principal/listado")
+    @FormUrlEncoded
+    Observable<ModeloPrincipal> listadoPrincipal(@Field("codeapp") int versionCode);
 
 
 

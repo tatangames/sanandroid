@@ -42,7 +42,10 @@
     <string name="no">No</string>
     <string name="servicios">Servicios</string>
     <string name="codigo_para_nortego">Código para NorteGo:</string>
-
+    <string name="nueva_actualizacion">Nueva actualización</string>
+    <string name="actualizar_nueva_version">Hay una nueva versión disponible. ¿Deseas actualizar ahora?</string>
+    <string name="por_favor_actualizar_la_app">Por favor, actualiza la aplicación para acceder a este Servicio.</string>
+    <string name="actualizar">Actualizar</string>
 
 
 

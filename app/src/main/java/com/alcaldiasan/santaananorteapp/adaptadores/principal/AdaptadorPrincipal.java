@@ -109,7 +109,7 @@ public class AdaptadorPrincipal extends RecyclerView.Adapter<RecyclerView.ViewHo
         sliderView.setAutoCycleDirection(SliderView.AUTO_CYCLE_DIRECTION_BACK_AND_FORTH);
         sliderView.setIndicatorSelectedColor(Color.WHITE);
         sliderView.setIndicatorUnselectedColor(Color.GRAY);
-        sliderView.setScrollTimeInSec(3);
+        sliderView.setScrollTimeInSec(7);
         sliderView.setAutoCycle(true);
         sliderView.startAutoCycle();
     }
