@@ -73,6 +73,9 @@ dependencies {
 
     implementation("com.github.smarteist:autoimageslider:1.4.0")
 
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

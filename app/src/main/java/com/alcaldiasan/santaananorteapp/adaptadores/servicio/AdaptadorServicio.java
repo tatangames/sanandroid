@@ -3,6 +3,7 @@ package com.alcaldiasan.santaananorteapp.adaptadores.servicio;
 import android.content.Context;
 import android.graphics.Color;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.adaptadores.slider.AdaptadorSlider;
@@ -42,7 +44,6 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
     private RequestOptions opcionesGlide = new RequestOptions()
             .diskCacheStrategy(DiskCacheStrategy.NONE)
             .skipMemoryCache(true)
-            .placeholder(R.drawable.codigo_progress_anim)
             .error(R.drawable.ic_error)
             .priority(Priority.HIGH);
 
@@ -66,24 +67,38 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
 
         ModeloServicio miModelo = modeloServicios.get(position);
 
+        CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(context);
+        circularProgressDrawable.setStrokeWidth(5f);
+        circularProgressDrawable.setCenterRadius(30f);
+        circularProgressDrawable.setColorSchemeColors(Color.BLUE);
+        circularProgressDrawable.start();
+
+        Log.d("ETIQUETA", miModelo.getImagen());
+
         if(miModelo.getImagen() != null && !TextUtils.isEmpty(miModelo.getImagen())){
             Glide.with(context)
                     .load(RetrofitBuilder.urlImagenes + miModelo.getImagen())
                     .apply(opcionesGlide)
+                    .placeholder(circularProgressDrawable)
                     .into(holder.imgServicio);
         }else{
             int resourceId = R.drawable.camaradefecto;
             Glide.with(context)
                     .load(resourceId)
                     .apply(opcionesGlide)
+                    .placeholder(circularProgressDrawable)
                     .into(holder.imgServicio);
         }
 
         holder.txtServicio.setText(miModelo.getNombre());
 
         holder.setListener((view, po) -> {
-            // ENVIAR EL ID TIPO DE SERVICIO
-            fragmentPrincipal.servicioSeleccionado(miModelo.getIdTipoServicio());
+            // ID TIPO DE SERVICIO
+            // TITULO DE SERVICIO
+            // ID DEL SERVICIO
+
+            fragmentPrincipal.servicioSeleccionado(miModelo.getIdTipoServicio(),
+                    miModelo.getNombre(), miModelo.getId());
         });
     }
 
@@ -101,7 +116,7 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
         private TextView txtServicio;
         private ImageView imgServicio;
 
-        IOnRecyclerViewClickListener listener;
+        private IOnRecyclerViewClickListener listener;
 
         public void setListener(IOnRecyclerViewClickListener listener) {
             this.listener = listener;

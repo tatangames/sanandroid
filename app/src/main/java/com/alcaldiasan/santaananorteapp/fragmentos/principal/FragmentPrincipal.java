@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.activity.login.LoginActivity;
+import com.alcaldiasan.santaananorteapp.activity.servicios.ServicioBasicoActivity;
 import com.alcaldiasan.santaananorteapp.adaptadores.principal.AdaptadorPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloServicio;
@@ -129,7 +130,6 @@ public class FragmentPrincipal extends Fragment {
                                 if(apiRespuesta.getSuccess() == 1) {
                                    // USUARIO BLOQUEADO
                                     usuarioBloqueado();
-
                                 }
                                 else if(apiRespuesta.getSuccess() == 2) {
 
@@ -251,7 +251,7 @@ public class FragmentPrincipal extends Fragment {
     }
 
 
-    public void servicioSeleccionado(int tipo){
+    public void servicioSeleccionado(int tipo, String titulo, int idServicio){
 
         // Verificar si el tipo de servicio está soportado
         if (SUPPORTED_TYPES.contains(tipo)) {
@@ -259,7 +259,10 @@ public class FragmentPrincipal extends Fragment {
             if(tipo == 1){
                 // SERVICIO BASICO
 
-
+                Intent intent = new Intent(getActivity(), ServicioBasicoActivity.class);
+                intent.putExtra("KEY_TITULO", titulo);
+                intent.putExtra("KEY_IDSERVICIO", idServicio);
+                startActivity(intent);
             }
 
         }else{

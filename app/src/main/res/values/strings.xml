@@ -46,7 +46,13 @@
     <string name="actualizar_nueva_version">Hay una nueva versión disponible. ¿Deseas actualizar ahora?</string>
     <string name="por_favor_actualizar_la_app">Por favor, actualiza la aplicación para acceder a este Servicio.</string>
     <string name="actualizar">Actualizar</string>
-
+    <string name="permiso_lozalizacion_ajustes">Se requiere permiso para acceder a ubicación. Por favor habilitar en la configuración</string>
+    <string name="nota_opcional">Nota (Opcional)</string>
+    <string name="enviar">ENVIAR</string>
+    <string name="abrir_camara">Abrir Cámara</string>
+    <string name="abrir_galeria">Abrir Galería</string>
+    <string name="opciones">Opciones</string>
+    <string name="seleccionar_imagen">Seleccionar Imagen</string>
 
 
 

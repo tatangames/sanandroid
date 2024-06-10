@@ -35,11 +35,6 @@ public class AdaptadorPrincipal extends RecyclerView.Adapter<RecyclerView.ViewHo
     private FragmentPrincipal fragmentPrincipal;
     private AdaptadorSlider adapterSlider;
 
-    RequestOptions opcionesGlide = new RequestOptions()
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .skipMemoryCache(true)
-            .placeholder(R.drawable.camaradefecto)
-            .priority(Priority.HIGH);
 
     public AdaptadorPrincipal(Context context, List<ModeloVistaPrincipal> modeloVistaPrincipal, FragmentPrincipal fragmentPrincipal) {
         this.context = context;
