@@ -16,6 +16,13 @@ public class ModeloServicio {
     @SerializedName("nombre")
     public String nombre;
 
+    @SerializedName("descripcion")
+    public String descripcion;
+
+
+    public String getDescripcion() {
+        return descripcion;
+    }
 
     public ModeloServicio(int idTipoServicio) {
         this.idTipoServicio = idTipoServicio;

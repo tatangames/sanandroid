@@ -98,7 +98,7 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
             // ID DEL SERVICIO
 
             fragmentPrincipal.servicioSeleccionado(miModelo.getIdTipoServicio(),
-                    miModelo.getNombre(), miModelo.getId());
+                    miModelo.getNombre(), miModelo.getId(), miModelo.getDescripcion());
         });
     }
 

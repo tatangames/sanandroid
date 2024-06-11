@@ -5,6 +5,8 @@ import com.alcaldiasan.santaananorteapp.modelos.telefono.ModeloVerificacion;
 import com.alcaldiasan.santaananorteapp.modelos.usuario.ModeloUsuario;
 
 import io.reactivex.Observable;
+import okhttp3.RequestBody;
+import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -38,8 +40,9 @@ public interface ApiService {
     Observable<ModeloPrincipal> listadoPrincipal(@Field("codeapp") int versionCode);
 
 
-
-
+    // ENVIAR DATOS DE SERVICIOS BASICOS
+    @POST("app/servicios/basicos/registrar")
+    Observable<ModeloUsuario> registrarServicioBasico(@Body RequestBody body);
 
 
 

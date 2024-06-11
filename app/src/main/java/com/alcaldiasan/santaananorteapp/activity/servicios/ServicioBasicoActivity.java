@@ -2,23 +2,27 @@ package com.alcaldiasan.santaananorteapp.activity.servicios;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputFilter;
+import android.text.TextUtils;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,20 +33,34 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.alcaldiasan.santaananorteapp.R;
+import com.alcaldiasan.santaananorteapp.extras.ImageUtils;
+import com.alcaldiasan.santaananorteapp.extras.MultipartUtil;
+import com.alcaldiasan.santaananorteapp.network.ApiService;
+import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
+import com.alcaldiasan.santaananorteapp.network.TokenManager;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.developer.kalert.KAlertDialog;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import es.dmoral.toasty.Toasty;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
+import okhttp3.MultipartBody;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -51,7 +69,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
 
-    private TextView txtToolbar;
+    private TextView txtToolbar, tituloServicio;
     private ImageView imgFlechaAtras, imgFoto;
     private int idServicio = 0;
     private TextInputEditText edtNota;
@@ -84,9 +102,22 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         return is_storage_image_permitted;
     }
 
+    // COORDENADAS GPS
+    private double latitudGPS = 0;
+    private double longitudGPS = 0;
+
+    private boolean boolSeguroEnviarDatos = true;
 
 
+    private ApiService service;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
+    private ProgressBar progressBar;
+    private RelativeLayout rootRelative;
+
+    private TokenManager tokenManager;
+
+    private Uri uriImagen = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,13 +128,37 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         imgFlechaAtras = findViewById(R.id.imgFlechaAtras);
         edtNota = findViewById(R.id.edtNota);
         imgFoto = findViewById(R.id.imgFoto);
+        rootRelative = findViewById(R.id.rootRelative);
+        tituloServicio = findViewById(R.id.tituloServicio);
 
         if (getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
             String titulo = bundle.getString("KEY_TITULO");
             txtToolbar.setText(titulo);
             idServicio = bundle.getInt("KEY_IDSERVICIO");
+
+            String textoServicio = bundle.getString("KEY_NOTA");
+
+            // DESCRIPCION DE ESTA PANTALLA
+            if(!TextUtils.isEmpty(textoServicio)){
+                tituloServicio.setText(textoServicio);
+            }
         }
+
+
+        int colorProgress = ContextCompat.getColor(this, R.color.barraProgreso);
+
+        tokenManager = TokenManager.getInstance(getSharedPreferences("prefs", MODE_PRIVATE));
+        service = RetrofitBuilder.createServiceAutentificacion(ApiService.class, tokenManager);
+
+        progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleLarge);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100, 100);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+        rootRelative.addView(progressBar, params);
+        progressBar.getIndeterminateDrawable().setColorFilter(colorProgress, PorterDuff.Mode.SRC_IN);
+        progressBar.setVisibility(View.GONE);
+
+
 
         InputFilter[] filterArray = new InputFilter[1];
         filterArray[0] = new InputFilter.LengthFilter(1000);
@@ -123,6 +178,8 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         btnEnviar.setOnClickListener(v -> {
             // SE DEBE OBTENER LA LOCALIZACION
 
+            closeKeyboard();
+
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
@@ -135,7 +192,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                     Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
                 }
             }
-
         });
 
         cameraLauncher = registerForActivityResult(
@@ -145,12 +201,22 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                         Intent data = result.getData();
                         if (data != null && data.getExtras() != null) {
                             Bitmap photo = (Bitmap) data.getExtras().get("data");
-                            hayImagen = true;
-                            imgFoto.setImageBitmap(photo);
+                            if(photo != null){
+                                hayImagen = true;
+                                imgFoto.setImageBitmap(photo);
+                                uriImagen = getImageUri(this, photo);
+                            }
                         }
                     }
                 }
         );
+    }
+
+    public Uri getImageUri(Context inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 80, bytes); // Used for compression rate of the Image : 100 means no compression
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "xyz", null);
+        return Uri.parse(path);
     }
 
     private void abrirBottomDialog(){
@@ -166,11 +232,13 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
 
             btnCamara.setOnClickListener(v -> {
+                bottomSheetProgreso.dismiss();
                 verificarPermisoCamara();
             });
 
 
             btnGaleria.setOnClickListener(v -> {
+                bottomSheetProgreso.dismiss();
                 verificarPermisoGaleria();
             });
 
@@ -189,6 +257,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     private void verificarPermisoCamara() {
         String[] perms = {Manifest.permission.CAMERA};
         if (EasyPermissions.hasPermissions(this, perms)) {
+
             openCamera();
         } else {
             EasyPermissions.requestPermissions(this, getString(R.string.esta_aplicacion_camara),
@@ -241,9 +310,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                 Toast.makeText(this, getString(R.string.permiso_denegado), Toast.LENGTH_SHORT).show();
             }
         }
-
     }
-
 
 
 
@@ -262,6 +329,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
             }else{
                 // aqui ya puede abrir galeria
+
                 abrirGaleria();
             }
 
@@ -274,6 +342,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                 // permiso autorizado
 
                 // aqui ya puede abrir galeria
+
                 abrirGaleria();
 
             }else{
@@ -300,8 +369,14 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                     Intent data = result.getData();
                     if (data != null) {
                         Uri imageUri = data.getData();
-                        hayImagen = true;
-                        cargar(imageUri);
+                        try {
+                            Bitmap photo = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                            uriImagen = getImageUri(this, photo);
+                            hayImagen = true;
+                            cargar(imageUri);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
@@ -310,9 +385,17 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
 
     private void cargar(Uri uri){
+
+        CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(this);
+        circularProgressDrawable.setStrokeWidth(5f);
+        circularProgressDrawable.setCenterRadius(30f);
+        circularProgressDrawable.setColorSchemeColors(Color.BLUE);
+        circularProgressDrawable.start();
+
         Glide.with(this)
                 .load(uri)
                 .apply(opcionesGlide)
+                .placeholder(circularProgressDrawable)
                 .into(imgFoto);
     }
 
@@ -355,16 +438,138 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     private void getLastLocation() {
 
         fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, location -> {
-                    if (location != null) {
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-                        Toast.makeText(ServicioBasicoActivity.this, "Lat: " + latitude + ", Lon: " + longitude, Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(ServicioBasicoActivity.this, "Unable to get location.", Toast.LENGTH_SHORT).show();
+            .addOnSuccessListener(this, location -> {
+                if (location != null) {
+                    latitudGPS = location.getLatitude();
+                    longitudGPS = location.getLongitude();
+                    try {
+                        apiEnviarDatos();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-                });
+                } else {
+                    // SIEMPRE SE ENVIARA FOTO, PERO SIN COORDENADAS
+                    try {
+                        apiEnviarDatos();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
     }
+
+    private KAlertDialog loadingDialog;
+
+
+
+
+    // ENVIAR DATOS AL SERVIDOR
+    private void apiEnviarDatos() throws IOException {
+
+        if(boolSeguroEnviarDatos){
+            boolSeguroEnviarDatos = false;
+
+            // Crear el diálogo de carga
+            loadingDialog = new KAlertDialog(this, KAlertDialog.PROGRESS_TYPE, false);
+            loadingDialog.getProgressHelper().setBarColor(R.color.colorPrimary);
+            loadingDialog.setTitleText(getString(R.string.cargando));
+            loadingDialog.setCancelable(false);
+            loadingDialog.show();
+
+            byte[] bytes = null;
+
+            ContentResolver resolver = getContentResolver();
+            InputStream inputStream = resolver.openInputStream(uriImagen);
+            bytes = ImageUtils.inputStreamToByteArray(inputStream);
+
+            String iduser = tokenManager.getToken().getId();
+
+            String nota = edtNota.getText().toString();
+            String lati = String.valueOf(latitudGPS);
+            String longi = String.valueOf(longitudGPS);
+
+            MultipartBody multipartBody = MultipartUtil.createMultipartEnvioDatos(bytes, iduser, String.valueOf(idServicio), nota, lati, longi);
+
+            compositeDisposable.add(
+                    service.registrarServicioBasico(multipartBody)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .retry()
+                            .subscribe(apiRespuesta -> {
+
+                                        boolSeguroEnviarDatos = true;
+                                        if (loadingDialog.isShowing()) {
+                                            loadingDialog.dismissWithAnimation();
+                                        }
+
+                                        if(apiRespuesta != null) {
+
+                                            if(apiRespuesta.getSuccess() == 1) {
+
+                                               Toasty.success(this, getString(R.string.notificacion_enviada), Toasty.LENGTH_LONG).show();
+
+                                               resetear();
+                                            }
+                                            else{
+                                                mensajeSinConexion();
+                                            }
+                                        }else{
+                                            if (loadingDialog.isShowing()) {
+                                                loadingDialog.dismissWithAnimation();
+                                            }
+                                            mensajeSinConexion();
+                                        }
+                                    },
+                                    throwable -> {
+                                        if (loadingDialog.isShowing()) {
+                                            loadingDialog.dismissWithAnimation();
+                                        }
+                                        mensajeSinConexion();
+                                    })
+            );
+        }
+    }
+
+
+    private void resetear(){
+        hayImagen = false;
+        uriImagen = null;
+        edtNota.setText("");
+        imgFoto.setImageResource(R.drawable.camarafoto);
+    }
+
+
+    void mensajeSinConexion(){
+        progressBar.setVisibility(View.GONE);
+        Toasty.error(this, getString(R.string.error_intentar_de_nuevo)).show();
+    }
+
+
+    private void hideLoadingDialog() {
+        if (loadingDialog.isShowing()) {
+            loadingDialog.dismissWithAnimation();
+        }
+    }
+
+
+
+    @Override
+    public void onDestroy(){
+        compositeDisposable.clear();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onStop() {
+        if(compositeDisposable != null){
+            compositeDisposable.clear();
+        }
+        super.onStop();
+    }
+
+
+
+
 
 
     @Override
@@ -399,5 +604,14 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         startActivity(intent);
     }
 
+
+    private void closeKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        View view = getCurrentFocus();
+
+        if (view != null) {
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
 
 }

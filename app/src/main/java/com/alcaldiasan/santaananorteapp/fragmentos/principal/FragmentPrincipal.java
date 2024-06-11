@@ -251,7 +251,7 @@ public class FragmentPrincipal extends Fragment {
     }
 
 
-    public void servicioSeleccionado(int tipo, String titulo, int idServicio){
+    public void servicioSeleccionado(int tipo, String titulo, int idServicio, String nota){
 
         // Verificar si el tipo de servicio está soportado
         if (SUPPORTED_TYPES.contains(tipo)) {
@@ -260,8 +260,9 @@ public class FragmentPrincipal extends Fragment {
                 // SERVICIO BASICO
 
                 Intent intent = new Intent(getActivity(), ServicioBasicoActivity.class);
-                intent.putExtra("KEY_TITULO", titulo);
+                intent.putExtra("KEY_TITULO", titulo); // EJEM: TALA DE ARBOLES
                 intent.putExtra("KEY_IDSERVICIO", idServicio);
+                intent.putExtra("KEY_NOTA", nota); // EJEM: EXPLICACION DE COMO ES
                 startActivity(intent);
             }
 
