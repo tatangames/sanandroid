@@ -2,9 +2,11 @@ package com.alcaldiasan.santaananorteapp.adaptadores.principal;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -18,9 +20,6 @@ import com.alcaldiasan.santaananorteapp.fragmentos.principal.FragmentPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloServicio;
 import com.alcaldiasan.santaananorteapp.modelos.slider.ModeloSlider;
-import com.bumptech.glide.Priority;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
 import com.smarteist.autoimageslider.IndicatorView.animation.type.IndicatorAnimationType;
 import com.smarteist.autoimageslider.SliderAnimations;
 import com.smarteist.autoimageslider.SliderView;
@@ -34,6 +33,8 @@ public class AdaptadorPrincipal extends RecyclerView.Adapter<RecyclerView.ViewHo
     private Context context;
     private FragmentPrincipal fragmentPrincipal;
     private AdaptadorSlider adapterSlider;
+
+
 
 
     public AdaptadorPrincipal(Context context, List<ModeloVistaPrincipal> modeloVistaPrincipal, FragmentPrincipal fragmentPrincipal) {
@@ -55,6 +56,9 @@ public class AdaptadorPrincipal extends RecyclerView.Adapter<RecyclerView.ViewHo
             case ModeloVistaPrincipal.TIPO_RECYCLER:
                 itemView = inflater.inflate(R.layout.cardview_vista_servicios, parent, false);
                 return new AdaptadorPrincipal.ServiciosViewHolder(itemView);
+            case ModeloVistaPrincipal.TIPO_TEXTVIEW:
+                itemView = inflater.inflate(R.layout.cardview_vista_textview, parent, false);
+                return new AdaptadorPrincipal.TituloViewHolder(itemView);
 
             default:
                 throw new IllegalArgumentException("Tipo de vista desconocido");
@@ -76,6 +80,16 @@ public class AdaptadorPrincipal extends RecyclerView.Adapter<RecyclerView.ViewHo
 
                 AdaptadorPrincipal.ServiciosViewHolder viewHolderServicios = (AdaptadorPrincipal.ServiciosViewHolder) holder;
                 configurarServicios(viewHolderServicios.recyclerView, mVista.getModeloServicios());
+                break;
+
+            case ModeloVistaPrincipal.TIPO_TEXTVIEW:
+
+                AdaptadorPrincipal.TituloViewHolder viewHolderTitulo = (AdaptadorPrincipal.TituloViewHolder) holder;
+
+                if(!TextUtils.isEmpty(mVista.getTitulo())){
+                    viewHolderTitulo.txtTitulo.setText(mVista.getTitulo());
+                }
+
                 break;
         }
     }
@@ -138,5 +152,13 @@ public class AdaptadorPrincipal extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
+    private static class TituloViewHolder extends RecyclerView.ViewHolder {
+        private TextView txtTitulo;
+
+        TituloViewHolder(View itemView) {
+            super(itemView);
+            txtTitulo = itemView.findViewById(R.id.txtTitulo);
+        }
+    }
 
 }

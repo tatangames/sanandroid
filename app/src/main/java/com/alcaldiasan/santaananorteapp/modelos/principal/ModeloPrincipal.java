@@ -1,10 +1,9 @@
 package com.alcaldiasan.santaananorteapp.modelos.principal;
 
-import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloServicio;
+import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloTipoServicio;
 import com.alcaldiasan.santaananorteapp.modelos.slider.ModeloSlider;
 import com.google.gson.annotations.SerializedName;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,13 +22,10 @@ public class ModeloPrincipal {
     @SerializedName("slider")
     public ArrayList<ModeloSlider> modeloSliders;
 
-    @SerializedName("servicio")
-    public List<ModeloServicio> modeloServicio;
+    @SerializedName("tiposervicio")
+    public List<ModeloTipoServicio> modeloTipoServicios;
 
 
-    public List<ModeloServicio> getModeloServicio() {
-        return modeloServicio;
-    }
 
     public int getSuccess() {
         return success;
@@ -37,5 +33,10 @@ public class ModeloPrincipal {
 
     public ArrayList<ModeloSlider> getModeloSliders() {
         return modeloSliders;
+    }
+
+
+    public List<ModeloTipoServicio> getModeloTipoServicios() {
+        return modeloTipoServicios;
     }
 }

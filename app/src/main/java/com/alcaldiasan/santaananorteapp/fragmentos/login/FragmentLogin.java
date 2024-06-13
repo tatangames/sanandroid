@@ -32,6 +32,7 @@ import com.alcaldiasan.santaananorteapp.network.ApiService;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
 import com.alcaldiasan.santaananorteapp.network.TokenManager;
 import com.developer.kalert.KAlertDialog;
+import com.onesignal.OneSignal;
 
 import es.dmoral.toasty.Toasty;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -48,6 +49,8 @@ public class FragmentLogin extends Fragment {
     private ApiService service;
     private ProgressBar progressBar;
     private RelativeLayout rootRelative;
+
+    private String oneSignalId = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -68,6 +71,10 @@ public class FragmentLogin extends Fragment {
         // Aplicar el ColorFilter al Drawable del ProgressBar
         progressBar.getIndeterminateDrawable().setColorFilter(colorProgress, PorterDuff.Mode.SRC_IN);
         progressBar.setVisibility(View.GONE);
+
+
+        // obtener identificador id one signal
+        oneSignalId = OneSignal.getUser().getPushSubscription().getId();
 
 
         btnRegistro.setOnClickListener(v -> {
@@ -284,7 +291,7 @@ public class FragmentLogin extends Fragment {
         Intent intent = new Intent(getContext(), LoginVerificarActivity.class);
         intent.putExtra("KEY_SEGUNDOS", segundos);
         intent.putExtra("KEY_PHONE", telefono);
-
+        intent.putExtra("KEY_FCM", oneSignalId);
         startActivity(intent);
     }
 

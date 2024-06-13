@@ -16,21 +16,25 @@ public class ModeloVistaPrincipal {
 
     public static final int TIPO_RECYCLER = 1;
 
+    public static final int TIPO_TEXTVIEW = 2;
+
 
     private ArrayList<ModeloSlider> modeloSliders;
 
     private List<ModeloServicio> modeloServicios;
 
+    private String titulo;
 
 
     public ModeloVistaPrincipal(int tipoVista, ArrayList<ModeloSlider> modeloSliders,
-                            List<ModeloServicio> modeloServicios
-
+                            List<ModeloServicio> modeloServicios, String titulo
     ) {
         this.tipoVista = tipoVista;
         this.modeloSliders = modeloSliders;
         this.modeloServicios = modeloServicios;
+        this.titulo = titulo;
     }
+
 
     public int getTipoVista() {
         return tipoVista;
@@ -43,5 +47,9 @@ public class ModeloVistaPrincipal {
 
     public List<ModeloServicio> getModeloServicios() {
         return modeloServicios;
+    }
+
+    public String getTitulo() {
+        return titulo;
     }
 }

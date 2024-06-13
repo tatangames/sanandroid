@@ -40,6 +40,7 @@ import com.alcaldiasan.santaananorteapp.network.ApiService;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
 import com.alcaldiasan.santaananorteapp.network.TokenManager;
 import com.developer.kalert.KAlertDialog;
+import com.onesignal.OneSignal;
 
 import es.dmoral.toasty.Toasty;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -68,6 +69,8 @@ public class LoginVerificarActivity extends AppCompatActivity implements Message
 
     private static final int READ_SMS_PERMISSION_CODE = 1;
 
+    private String oneSignalId = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +87,7 @@ public class LoginVerificarActivity extends AppCompatActivity implements Message
             Bundle bundle = getIntent().getExtras();
             segundos = bundle.getInt("KEY_SEGUNDOS");
             telefono = bundle.getString("KEY_PHONE");
+            oneSignalId = bundle.getString("KEY_FCM");
         }
 
         tokenManager = TokenManager.getInstance(getSharedPreferences("prefs", MODE_PRIVATE));
@@ -97,6 +101,11 @@ public class LoginVerificarActivity extends AppCompatActivity implements Message
         // Aplicar el ColorFilter al Drawable del ProgressBar
         progressBar.getIndeterminateDrawable().setColorFilter(colorProgress, PorterDuff.Mode.SRC_IN);
         progressBar.setVisibility(View.GONE);
+
+        if(oneSignalId != null){
+            // obtener identificador id one signal
+            oneSignalId = OneSignal.getUser().getPushSubscription().getId();
+        }
 
         onBackPressedDispatcher = getOnBackPressedDispatcher();
 

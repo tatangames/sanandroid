@@ -16,6 +16,7 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputFilter;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -505,6 +506,12 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                                         if(apiRespuesta != null) {
 
                                             if(apiRespuesta.getSuccess() == 1) {
+                                                // HAY SOLICITUD ACTIVA, Y ESTA DENTRO DEL RANGO 20 METROS
+
+                                                alertaSoliActiva(apiRespuesta.getTitulo(), apiRespuesta.getMensaje());
+
+                                            }
+                                            else if(apiRespuesta.getSuccess() == 2) {
 
                                                Toasty.success(this, getString(R.string.notificacion_enviada), Toasty.LENGTH_LONG).show();
 
@@ -528,6 +535,32 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                                     })
             );
         }
+    }
+
+    private void alertaSoliActiva(String titulo, String mensaje){
+
+        KAlertDialog pDialog = new KAlertDialog(this, KAlertDialog.CUSTOM_IMAGE_TYPE, false);
+
+        pDialog.setCustomImage(R.drawable.ic_informacion);
+
+        pDialog.setTitleText(titulo);
+        pDialog.setTitleTextGravity(Gravity.CENTER);
+        pDialog.setTitleTextSize(19);
+
+        pDialog.setContentText(mensaje);
+        pDialog.setContentTextAlignment(View.TEXT_ALIGNMENT_CENTER, Gravity.START);
+        pDialog.setContentTextSize(17);
+
+        pDialog.setCancelable(false);
+        pDialog.setCanceledOnTouchOutside(false);
+
+        pDialog.confirmButtonColor(R.drawable.codigo_kalert_dialog_corners_confirmar);
+        pDialog.setConfirmClickListener(getString(R.string.aceptar), sDialog -> {
+            sDialog.dismissWithAnimation();
+
+        });
+
+        pDialog.show();
     }
 
 

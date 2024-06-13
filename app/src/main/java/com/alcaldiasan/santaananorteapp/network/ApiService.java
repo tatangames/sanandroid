@@ -1,8 +1,11 @@
 package com.alcaldiasan.santaananorteapp.network;
 
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloPrincipal;
+import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloSolicitud;
 import com.alcaldiasan.santaananorteapp.modelos.telefono.ModeloVerificacion;
 import com.alcaldiasan.santaananorteapp.modelos.usuario.ModeloUsuario;
+
+import java.util.List;
 
 import io.reactivex.Observable;
 import okhttp3.RequestBody;
@@ -42,7 +45,7 @@ public interface ApiService {
 
     // ENVIAR DATOS DE SERVICIOS BASICOS
     @POST("app/servicios/basicos/registrar")
-    Observable<ModeloUsuario> registrarServicioBasico(@Body RequestBody body);
+    Observable<ModeloSolicitud> registrarServicioBasico(@Body RequestBody body);
 
 
 

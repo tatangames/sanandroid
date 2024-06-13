@@ -4,7 +4,6 @@ import static android.content.Context.MODE_PRIVATE;
 
 import static androidx.browser.customtabs.CustomTabsClient.getPackageName;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -20,7 +19,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -31,6 +29,7 @@ import com.alcaldiasan.santaananorteapp.activity.servicios.ServicioBasicoActivit
 import com.alcaldiasan.santaananorteapp.adaptadores.principal.AdaptadorPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloServicio;
+import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloTipoServicio;
 import com.alcaldiasan.santaananorteapp.network.ApiService;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
 import com.alcaldiasan.santaananorteapp.network.TokenManager;
@@ -62,15 +61,11 @@ public class FragmentPrincipal extends Fragment {
     // VERSION DE LA APLICACION
     private int versionApp = -1;
 
-    // PARA SABER SI EL SERVICIO ES NUEVO
-    private List<ModeloServicio> services = new ArrayList<>();
-
-
 
     // FORMA PARA MOSTRAR AL USUARIO SI HAY UN NUEVO TIPO SERVICIO Y QUE ACTUALICE APLICACION
 
     // 1- SERVICIO BASICO
-    private static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1);
+    public static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1);
 
     private boolean boolCartelUpdateServicio = true;
 
@@ -133,12 +128,13 @@ public class FragmentPrincipal extends Fragment {
                                 }
                                 else if(apiRespuesta.getSuccess() == 2) {
 
-                                    elementos.add(new ModeloVistaPrincipal(ModeloVistaPrincipal.TIPO_SLIDER, apiRespuesta.getModeloSliders(), null));
-                                    elementos.add(new ModeloVistaPrincipal(ModeloVistaPrincipal.TIPO_RECYCLER, null, apiRespuesta.getModeloServicio()));
+                                    elementos.add(new ModeloVistaPrincipal(ModeloVistaPrincipal.TIPO_SLIDER, apiRespuesta.getModeloSliders(), null, null));
 
+                                    for(ModeloTipoServicio mm : apiRespuesta.getModeloTipoServicios()){
 
-                                    for (ModeloServicio mm : apiRespuesta.getModeloServicio()){
-                                        services.add(new ModeloServicio(mm.getIdTipoServicio()));
+                                        elementos.add(new ModeloVistaPrincipal(ModeloVistaPrincipal.TIPO_TEXTVIEW, null, null, mm.getNombre()));
+
+                                        elementos.add(new ModeloVistaPrincipal(ModeloVistaPrincipal.TIPO_RECYCLER, null, mm.getModeloServicios(), null));
                                     }
 
                                     adaptadorPrincipal = new AdaptadorPrincipal(getContext(), elementos, this);

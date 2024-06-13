@@ -1,5 +1,7 @@
 package com.alcaldiasan.santaananorteapp.adaptadores.servicio;
 
+import static com.alcaldiasan.santaananorteapp.fragmentos.principal.FragmentPrincipal.SUPPORTED_TYPES;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.text.TextUtils;
@@ -11,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
@@ -52,6 +56,8 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
         this.context = context;
         this.modeloServicios = modeloServicios;
         this.fragmentPrincipal = fragmentPrincipal;
+
+
     }
 
     @NonNull
@@ -73,7 +79,13 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
         circularProgressDrawable.setColorSchemeColors(Color.BLUE);
         circularProgressDrawable.start();
 
-        Log.d("ETIQUETA", miModelo.getImagen());
+
+        if (SUPPORTED_TYPES.contains(miModelo.getIdTipoServicio())) {
+            holder.vistaConstraint.setBackgroundColor(ContextCompat.getColor(context, R.color.c_blanco));
+        }else{
+            holder.vistaConstraint.setBackgroundColor(ContextCompat.getColor(context, R.color.grisBloque));
+        }
+
 
         if(miModelo.getImagen() != null && !TextUtils.isEmpty(miModelo.getImagen())){
             Glide.with(context)
@@ -113,6 +125,7 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
 
     public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
+        private ConstraintLayout vistaConstraint;
         private TextView txtServicio;
         private ImageView imgServicio;
 
@@ -125,6 +138,7 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
         public MyViewHolder(View itemView){
             super(itemView);
 
+            vistaConstraint = itemView.findViewById(R.id.vistaConstraint);
             imgServicio = itemView.findViewById(R.id.imgServicio);
             txtServicio = itemView.findViewById(R.id.txtServicio);
 
