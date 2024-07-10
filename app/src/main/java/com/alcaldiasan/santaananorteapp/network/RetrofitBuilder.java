@@ -10,9 +10,9 @@ public class RetrofitBuilder {
 
 
 
-     // URL LOCAL
-     private static final String BASE_URL = "http://192.168.100.159:8080/api/";
-     public static final String urlImagenes = "http://192.168.100.159:8080/storage/archivos/";
+    // URL LOCAL
+    private static final String BASE_URL = "http://192.168.100.159:8080/api/";
+    public static final String urlImagenes = "http://192.168.100.159:8080/storage/archivos/";
 
 
     private final static OkHttpClient client = buildClient();

@@ -64,8 +64,8 @@ public class FragmentPrincipal extends Fragment {
 
     // FORMA PARA MOSTRAR AL USUARIO SI HAY UN NUEVO TIPO SERVICIO Y QUE ACTUALICE APLICACION
 
-    // 1- SERVICIO BASICO
-    public static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1);
+    // 1- SERVICIO BASICO (bacheo, alumbrado, desechos solidos)
+    public static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1,2,3,4);
 
     private boolean boolCartelUpdateServicio = true;
 
@@ -247,12 +247,12 @@ public class FragmentPrincipal extends Fragment {
     }
 
 
-    public void servicioSeleccionado(int tipo, String titulo, int idServicio, String nota){
+    public void servicioSeleccionado(int idServicio, String titulo, String nota){
 
         // Verificar si el tipo de servicio está soportado
-        if (SUPPORTED_TYPES.contains(tipo)) {
+        if (SUPPORTED_TYPES.contains(idServicio)) {
 
-            if(tipo == 1){
+            if(idServicio == 1 || idServicio == 2 || idServicio == 3 ){
                 // SERVICIO BASICO
 
                 Intent intent = new Intent(getActivity(), ServicioBasicoActivity.class);
@@ -261,6 +261,9 @@ public class FragmentPrincipal extends Fragment {
                 intent.putExtra("KEY_NOTA", nota); // EJEM: EXPLICACION DE COMO ES
                 startActivity(intent);
             }
+           /* else if(tipo == 2){
+
+            }*/
 
         }else{
             dialogoNuevoServicioDisponible();

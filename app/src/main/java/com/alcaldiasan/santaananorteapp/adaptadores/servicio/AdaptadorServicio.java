@@ -105,12 +105,12 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
         holder.txtServicio.setText(miModelo.getNombre());
 
         holder.setListener((view, po) -> {
-            // ID TIPO DE SERVICIO
             // TITULO DE SERVICIO
             // ID DEL SERVICIO
 
-            fragmentPrincipal.servicioSeleccionado(miModelo.getIdTipoServicio(),
-                    miModelo.getNombre(), miModelo.getId(), miModelo.getDescripcion());
+            fragmentPrincipal.servicioSeleccionado(miModelo.getId(),
+                    miModelo.getNombre(),
+                    miModelo.getDescripcion());
         });
     }
 
