@@ -54,6 +54,20 @@
     <string name="opciones">Opciones</string>
     <string name="seleccionar_imagen">Seleccionar Imagen</string>
     <string name="notificacion_enviada">Notificación Enviada</string>
+    <string name="solicitud_tala_arbol">Solicitud Tala de Árbol</string>
+    <string name="denuncia_arbol">Denuncia Tala de Árbol</string>
+    <string name="nombre_completo">Nombre completo</string>
+    <string name="telefono">Teléfono</string>
+    <string name="direccion">Dirección</string>
+    <string name="imagen_del_arbol">Imagen del Árbol</string>
+    <string name="tiene_escritura">¿Tiene Escritura?</string>
+    <string name="nombre_es_requerido">Nombre es requerido</string>
+    <string name="direccion_es_requerido">Dirección es requerido</string>
+    <string name="imagen_arbol_es_requerido">Imagen del Árbol es requerido</string>
+
+
+
+
 
 
 

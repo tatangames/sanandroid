@@ -48,6 +48,10 @@ public interface ApiService {
     Observable<ModeloSolicitud> registrarServicioBasico(@Body RequestBody body);
 
 
+    // ENVIAR DATOS DE SOLICITUD DE TALA ARBOL
+    @POST("app/servicios/talaarbol-solicitud/registrar")
+    Observable<ModeloSolicitud> registrarSolicitudTalaArbol(@Body RequestBody body);
+
 
 
 

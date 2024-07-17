@@ -25,10 +25,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.activity.login.LoginActivity;
-import com.alcaldiasan.santaananorteapp.activity.servicios.ServicioBasicoActivity;
+import com.alcaldiasan.santaananorteapp.activity.servicios.basico.ServicioBasicoActivity;
+import com.alcaldiasan.santaananorteapp.activity.servicios.talaarbol.TalaArbolActivity;
 import com.alcaldiasan.santaananorteapp.adaptadores.principal.AdaptadorPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
-import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloServicio;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloTipoServicio;
 import com.alcaldiasan.santaananorteapp.network.ApiService;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
@@ -65,7 +65,7 @@ public class FragmentPrincipal extends Fragment {
     // FORMA PARA MOSTRAR AL USUARIO SI HAY UN NUEVO TIPO SERVICIO Y QUE ACTUALICE APLICACION
 
     // 1- SERVICIO BASICO (bacheo, alumbrado, desechos solidos)
-    public static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1,2,3,4);
+    public static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1,2);
 
     private boolean boolCartelUpdateServicio = true;
 
@@ -247,23 +247,29 @@ public class FragmentPrincipal extends Fragment {
     }
 
 
-    public void servicioSeleccionado(int idServicio, String titulo, String nota){
+    public void servicioSeleccionado(int tipoServicio, int id, String titulo, String descripcion){
 
         // Verificar si el tipo de servicio está soportado
-        if (SUPPORTED_TYPES.contains(idServicio)) {
+        if (SUPPORTED_TYPES.contains(tipoServicio)) {
 
-            if(idServicio == 1 || idServicio == 2 || idServicio == 3 ){
+            if(tipoServicio == 1){
                 // SERVICIO BASICO
 
                 Intent intent = new Intent(getActivity(), ServicioBasicoActivity.class);
-                intent.putExtra("KEY_TITULO", titulo); // EJEM: TALA DE ARBOLES
-                intent.putExtra("KEY_IDSERVICIO", idServicio);
-                intent.putExtra("KEY_NOTA", nota); // EJEM: EXPLICACION DE COMO ES
+                intent.putExtra("KEY_IDSERVICIO", id);
+                intent.putExtra("KEY_TITULO", titulo);
+                intent.putExtra("KEY_NOTA", descripcion); // DESCRIPCION
                 startActivity(intent);
             }
-           /* else if(tipo == 2){
+            else if(tipoServicio == 2){
 
-            }*/
+                // DENUNCIA DE TALA DE ARBOL
+                Intent intent = new Intent(getActivity(), TalaArbolActivity.class);
+                intent.putExtra("KEY_IDSERVICIO", id);
+                intent.putExtra("KEY_TITULO", titulo);
+                intent.putExtra("KEY_NOTA", descripcion); // DESCRIPCION
+                startActivity(intent);
+            }
 
         }else{
             dialogoNuevoServicioDisponible();

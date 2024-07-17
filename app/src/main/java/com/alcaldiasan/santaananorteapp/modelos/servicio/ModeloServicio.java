@@ -7,8 +7,8 @@ public class ModeloServicio {
     @SerializedName("id")
     public int id;
 
-    @SerializedName("id_tiposervicio")
-    public int idTipoServicio;
+    @SerializedName("tiposervicio")
+    public int tiposervicio;
 
     @SerializedName("imagen")
     public String imagen;
@@ -20,24 +20,14 @@ public class ModeloServicio {
     public String descripcion;
 
 
-    public ModeloServicio(int id, int idTipoServicio, String imagen, String nombre, String descripcion) {
-        this.id = id;
-        this.idTipoServicio = idTipoServicio;
-        this.imagen = imagen;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-    }
+
 
     public String getDescripcion() {
         return descripcion;
     }
 
-    public ModeloServicio(int idTipoServicio) {
-        this.idTipoServicio = idTipoServicio;
-    }
-
-    public int getIdTipoServicio() {
-        return idTipoServicio;
+    public int getTiposervicio() {
+        return tiposervicio;
     }
 
     public int getId() {

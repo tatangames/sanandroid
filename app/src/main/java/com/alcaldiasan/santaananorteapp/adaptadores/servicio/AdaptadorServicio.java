@@ -80,7 +80,7 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
         circularProgressDrawable.start();
 
 
-        if (SUPPORTED_TYPES.contains(miModelo.getIdTipoServicio())) {
+        if (SUPPORTED_TYPES.contains(miModelo.getTiposervicio())) {
             holder.vistaConstraint.setBackgroundColor(ContextCompat.getColor(context, R.color.c_blanco));
         }else{
             holder.vistaConstraint.setBackgroundColor(ContextCompat.getColor(context, R.color.grisBloque));
@@ -105,10 +105,9 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
         holder.txtServicio.setText(miModelo.getNombre());
 
         holder.setListener((view, po) -> {
-            // TITULO DE SERVICIO
-            // ID DEL SERVICIO
 
-            fragmentPrincipal.servicioSeleccionado(miModelo.getId(),
+            fragmentPrincipal.servicioSeleccionado(miModelo.getTiposervicio(),
+                    miModelo.getId(),
                     miModelo.getNombre(),
                     miModelo.getDescripcion());
         });

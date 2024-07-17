@@ -1,4 +1,4 @@
-package com.alcaldiasan.santaananorteapp.activity.servicios;
+package com.alcaldiasan.santaananorteapp.activity.servicios.basico;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -120,6 +120,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
     private Uri uriImagen = null;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -145,7 +146,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                 tituloServicio.setText(textoServicio);
             }
         }
-
 
         int colorProgress = ContextCompat.getColor(this, R.color.barraProgreso);
 

@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootRelative"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/c_blanco">
+
+    <include
+        android:id="@+id/toolbarCon"
+        layout="@layout/toolbar_v1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbarCon"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioGroup
+                android:id="@+id/radioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="25dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <RadioButton
+                    android:id="@+id/radioSolicitud"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/solicitud_tala_arbol"
+                    android:textColor="@color/negro"
+                    android:textSize="18sp" />
+
+                <RadioButton
+                    android:id="@+id/radioDenuncia"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/denuncia_arbol"
+                    android:textColor="@color/negro"
+                    android:textSize="18sp" />
+            </RadioGroup>
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+               android:id="@+id/constraintSolicitud"
+                android:visibility="visible"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <com.google.android.material.textfield.TextInputLayout
+
+                    android:id="@+id/inputNombre"
+                    style="@style/Text_Input_Layout_Estilo_v1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="45dp"
+                    android:layout_marginEnd="16dp"
+                    app:boxStrokeColor="@color/estilo_text_input_box_stroke"
+                    app:boxStrokeWidth="1dp"
+                    app:errorTextAppearance="@style/Text_Input_Layout_Error_Apariencia"
+                    app:hintTextColor="@color/gris616161"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtNombre"
+                        style="@style/Input_Edit_Text_Tema"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/nombre_completo"
+                        android:inputType="text"
+                        android:background="@color/c_blanco"
+                        android:maxLength="100"
+                        android:textColor="@color/fondo_textos_negro_blanco_v1"
+                        android:textSize="20sp"
+                        android:textStyle="normal"
+                        app:hintTextAppearance="@style/Input_Edit_Text_Hint_Input" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <com.google.android.material.textfield.TextInputLayout
+
+                    android:id="@+id/inputTelefono"
+                    style="@style/Text_Input_Layout_Estilo_v1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="25dp"
+                    android:layout_marginEnd="16dp"
+                    app:boxStrokeColor="@color/estilo_text_input_box_stroke"
+                    app:boxStrokeWidth="1dp"
+                    app:errorTextAppearance="@style/Text_Input_Layout_Error_Apariencia"
+                    app:hintTextColor="@color/gris616161"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/inputNombre">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtTelefono"
+                        style="@style/Input_Edit_Text_Tema"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/telefono"
+                        android:inputType="phone"
+                        android:maxLength="8"
+                        android:background="@color/c_blanco"
+                        android:textColor="@color/fondo_textos_negro_blanco_v1"
+                        android:textSize="20sp"
+                        android:textStyle="normal"
+                        app:hintTextAppearance="@style/Input_Edit_Text_Hint_Input" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <com.google.android.material.textfield.TextInputLayout
+
+                    android:id="@+id/inputDireccion"
+                    style="@style/Text_Input_Layout_Estilo_v1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="25dp"
+                    android:layout_marginEnd="16dp"
+                    app:boxStrokeColor="@color/estilo_text_input_box_stroke"
+                    app:boxStrokeWidth="1dp"
+                    app:errorTextAppearance="@style/Text_Input_Layout_Error_Apariencia"
+                    app:hintTextColor="@color/gris616161"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/inputTelefono">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtDireccion"
+                        style="@style/Input_Edit_Text_Tema"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/direccion"
+                        android:inputType="text"
+                        android:background="@color/c_blanco"
+                        android:maxLength="500"
+                        android:textColor="@color/fondo_textos_negro_blanco_v1"
+                        android:textSize="20sp"
+                        android:textStyle="normal"
+                        app:hintTextAppearance="@style/Input_Edit_Text_Hint_Input" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <TextView
+                    android:id="@+id/texto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="35dp"
+                    android:layout_marginEnd="16dp"
+                    android:fontFamily="@font/montserratmedium"
+                    android:text="@string/imagen_del_arbol"
+                    android:textColor="@color/negro"
+                    android:textSize="17sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/inputDireccion" />
+
+
+                <ImageView
+                    android:id="@+id/imgFoto"
+                    android:layout_width="180dp"
+                    android:layout_height="180dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="25dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/camarafoto"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/texto" />
+
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/inputNota"
+                    style="@style/Text_Input_Layout_Estilo_v1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@color/c_blanco"
+                    app:boxStrokeColor="@color/estilo_text_input_box_stroke"
+                    app:boxStrokeWidth="1dp"
+                    app:counterEnabled="true"
+                    app:errorIconDrawable="@null"
+                    app:errorTextAppearance="@style/Text_Input_Layout_Error_Apariencia"
+                    app:hintTextColor="@color/gris616161"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/imgFoto">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtNota"
+                        style="@style/Input_Edit_Text_Tema"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/c_blanco"
+                        android:gravity="top|start"
+                        android:hint="@string/nota_opcional"
+                        android:inputType="textMultiLine"
+                        android:lines="2"
+                        android:overScrollMode="always"
+                        android:scrollHorizontally="false"
+                        android:textColor="@color/fondo_textos_negro_blanco_v1"
+                        android:textSize="20sp"
+                        android:textStyle="normal"
+                        app:hintTextAppearance="@style/Input_Edit_Text_Hint_Input" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <CheckBox
+                    android:id="@+id/checkEscritura"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="30dp"
+                    android:text="@string/tiene_escritura"
+                    android:textColor="@color/negro"
+                    android:textSize="17sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/inputNota" />
+
+
+
+
+                <Button
+                    android:id="@+id/btnEnviar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="100dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="100dp"
+                    android:background="@drawable/codigo_boton_redondeado_v1"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:text="@string/enviar"
+                    android:textAllCaps="false"
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/checkEscritura" />
+
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraintDenuncia"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <ImageView
+                    android:id="@+id/imgFotoDenuncia"
+                    android:layout_width="180dp"
+                    android:layout_height="180dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="45dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/camarafoto"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/inputNotaDenuncia"
+                    style="@style/Text_Input_Layout_Estilo_v1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@color/c_blanco"
+                    app:boxStrokeColor="@color/estilo_text_input_box_stroke"
+                    app:boxStrokeWidth="1dp"
+                    app:counterEnabled="true"
+                    app:errorIconDrawable="@null"
+                    app:errorTextAppearance="@style/Text_Input_Layout_Error_Apariencia"
+                    app:hintTextColor="@color/gris616161"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/imgFotoDenuncia">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtNotaDenuncia"
+                        style="@style/Input_Edit_Text_Tema"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/c_blanco"
+                        android:gravity="top|start"
+                        android:hint="@string/nota_opcional"
+                        android:inputType="textMultiLine"
+                        android:lines="2"
+                        android:overScrollMode="always"
+                        android:scrollHorizontally="false"
+                        android:textColor="@color/fondo_textos_negro_blanco_v1"
+                        android:textSize="20sp"
+                        android:textStyle="normal"
+                        app:hintTextAppearance="@style/Input_Edit_Text_Hint_Input" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <Button
+                    android:id="@+id/btnEnviarDenuncia"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="100dp"
+                    android:background="@drawable/codigo_boton_redondeado_v1"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:text="@string/enviar"
+                    android:textAllCaps="false"
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/inputNotaDenuncia" />
+
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+
+
+        </LinearLayout>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </ScrollView>
+
+
+</RelativeLayout>
+
+

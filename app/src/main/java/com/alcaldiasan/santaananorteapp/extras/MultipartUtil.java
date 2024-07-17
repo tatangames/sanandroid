@@ -23,4 +23,29 @@ public class MultipartUtil {
 
 
     }
+
+
+    public static MultipartBody createMultipartSolicitudTalaArbol(byte[] imageData, String iduser, String tiposervicio, String nota, String latitud, String longitud,
+                                                                  String nombre, String telefono, String direccion, int checkEscri) {
+
+
+        RequestBody imagenBody = RequestBody.create(MediaType.parse("image/*"), imageData);
+
+        // Crear el MultipartBody que contiene la imagen, el nombre y el apellido
+        return new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("imagen", "image.jpg", imagenBody)
+                .addFormDataPart("iduser", iduser)
+                .addFormDataPart("idservicio", tiposervicio)
+                .addFormDataPart("nota", nota)
+                .addFormDataPart("latitud", latitud)
+                .addFormDataPart("longitud", longitud)
+                .addFormDataPart("nombre", nombre)
+                .addFormDataPart("telefono", telefono)
+                .addFormDataPart("direccion", direccion)
+                .addFormDataPart("escritura", String.valueOf(checkEscri))
+                .build();
+
+
+    }
 }
