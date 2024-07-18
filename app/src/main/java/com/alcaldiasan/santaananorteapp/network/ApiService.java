@@ -53,6 +53,9 @@ public interface ApiService {
     Observable<ModeloSolicitud> registrarSolicitudTalaArbol(@Body RequestBody body);
 
 
+    // ENVIAR DATOS DE DENUNCIA DE TALA ARBOL
+    @POST("app/servicios/talaarbol-denuncia/registrar")
+    Observable<ModeloSolicitud> registrarDenunciaTalaArbol(@Body RequestBody body);
 
 
 

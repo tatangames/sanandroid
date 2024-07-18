@@ -327,7 +327,7 @@
                         android:layout_height="wrap_content"
                         android:background="@color/c_blanco"
                         android:gravity="top|start"
-                        android:hint="@string/nota_opcional"
+                        android:hint="@string/notas"
                         android:inputType="textMultiLine"
                         android:lines="2"
                         android:overScrollMode="always"

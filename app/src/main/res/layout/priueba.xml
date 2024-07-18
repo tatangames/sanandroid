@@ -1,42 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:background="@color/c_blanco"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
 
     <com.google.android.material.textfield.TextInputLayout
-
-        android:id="@+id/inputCorreo"
+        android:id="@+id/inputNombre"
         style="@style/Text_Input_Layout_Estilo_v1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="45dp"
         android:layout_marginEnd="16dp"
+        android:layout_marginBottom="25dp"
         app:boxStrokeColor="@color/estilo_text_input_box_stroke"
         app:boxStrokeWidth="1dp"
         app:errorIconDrawable="@null"
         app:errorTextAppearance="@style/Text_Input_Layout_Error_Apariencia"
+        app:hintEnabled="true"
+
         app:hintTextColor="@color/gris616161"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintStart_toStartOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edtCorreo"
+            android:id="@+id/edtNombre"
             style="@style/Input_Edit_Text_Tema"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/nombre_completo"
-            android:inputType="textEmailAddress"
-            android:maxLength="100"
+            android:inputType="text"
             android:textColor="@color/fondo_textos_negro_blanco_v1"
+            android:maxLength="5000"
             android:textSize="20sp"
             android:textStyle="normal"
             app:hintTextAppearance="@style/Input_Edit_Text_Hint_Input" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

@@ -80,6 +80,7 @@
                         android:paddingStart="8dp"
                         android:paddingLeft="8dp"
                         android:paddingEnd="8dp"
+                        android:textColorHint="@color/negro"
                         android:paddingRight="8dp"
                         android:text="+503"
                         android:textSize="18sp" />
@@ -92,6 +93,8 @@
                         android:hint="@string/numero_de_telefono"
                         android:inputType="phone"
                         android:maxLength="9"
+                        android:singleLine="true"
+                        android:textColorHint="@color/negro"
                         android:textSize="18sp" />
                 </LinearLayout>
 

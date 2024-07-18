@@ -74,13 +74,13 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
     private FusedLocationProviderClient fusedLocationClient;
 
     private TextView txtToolbar, tituloServicio;
-    private ImageView imgFlechaAtras, imgFoto;
-    private int idServicio = 0;
-    private TextInputEditText edtNota;
+    private ImageView imgFlechaAtras, imgFoto, imgFotoDenuncia;
+    private TextInputEditText edtNota, edtNotaDenuncia;
 
     private boolean bottomSheetImagen = false;
 
     private boolean hayImagen = false;
+    private boolean hayImagenDenuncia = false;
 
     // PERMISOS PARA CAMARA Y GALERIA
 
@@ -111,6 +111,7 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
     private double longitudGPS = 0;
 
     private boolean boolSeguroEnviarDatos = true;
+    private boolean boolSeguroEnviarDatosDenuncia = true;
 
 
     private ApiService service;
@@ -122,6 +123,7 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
     private TokenManager tokenManager;
 
     private Uri uriImagen = null;
+    private Uri uriImagenDenuncia = null;
 
 
     private ConstraintLayout constraintSolicitud, constraintDenuncia;
@@ -129,6 +131,8 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
 
     private TextInputEditText edtNombre, edtTelefono, edtDireccion;
     private CheckBox checkEscritura;
+
+    private boolean estadoSolicitud = true;
 
 
     @Override
@@ -151,14 +155,22 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
         edtDireccion = findViewById(R.id.edtDireccion);
         checkEscritura = findViewById(R.id.checkEscritura);
 
+
+        imgFotoDenuncia = findViewById(R.id.imgFotoDenuncia);
+        edtNotaDenuncia = findViewById(R.id.edtNotaDenuncia);
+
+
+
         radioSolicitud.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
+                estadoSolicitud = true;
                 mostrarVistaSolicitud();
             }
         });
 
         radioDenuncia.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
+                estadoSolicitud = false;
                 mostrarVistaDenuncia();
             }
         });
@@ -168,7 +180,7 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
             Bundle bundle = getIntent().getExtras();
             String titulo = bundle.getString("KEY_TITULO");
             txtToolbar.setText(titulo);
-            idServicio = bundle.getInt("KEY_IDSERVICIO");
+
 
             String textoServicio = bundle.getString("KEY_NOTA");
 
@@ -203,6 +215,11 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
         imgFoto.setOnClickListener(v -> {
             abrirBottomDialog();
         });
+
+        imgFotoDenuncia.setOnClickListener(v -> {
+            abrirBottomDialog();
+        });
+
 
         Button btnEnviar = findViewById(R.id.btnEnviar);
         btnEnviar.setOnClickListener(v -> {
@@ -255,14 +272,63 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                         if (data != null && data.getExtras() != null) {
                             Bitmap photo = (Bitmap) data.getExtras().get("data");
                             if(photo != null){
-                                hayImagen = true;
-                                imgFoto.setImageBitmap(photo);
-                                uriImagen = getImageUri(this, photo);
+
+                                if(estadoSolicitud){ // vista solicitud
+                                    hayImagen = true;
+                                    imgFoto.setImageBitmap(photo);
+                                    uriImagen = getImageUri(this, photo);
+
+                                }else{ // vista denuncia
+                                    hayImagenDenuncia = true;
+                                    imgFotoDenuncia.setImageBitmap(photo);
+                                    uriImagenDenuncia = getImageUri(this, photo);
+                                }
                             }
                         }
                     }
                 }
         );
+
+
+
+        //************
+
+        Button btnEnviarDenuncias = findViewById(R.id.btnEnviarDenuncia);
+
+        btnEnviarDenuncias.setOnClickListener(v -> {
+            // SE DEBE OBTENER LA LOCALIZACION
+
+            closeKeyboard();
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        LOCATION_PERMISSION_REQUEST_CODE);
+            } else {
+                if(hayImagenDenuncia){
+
+                    // VERIFICAR ENTRADAS DE TEXTOS
+                    if(TextUtils.isEmpty(edtNotaDenuncia.getText().toString())){
+                        Toasty.info(this, R.string.nota_es_requerida, Toasty.LENGTH_SHORT).show();
+                        return;
+                    }
+
+
+                    if(!hayImagenDenuncia){
+                        Toasty.info(this, R.string.imagen_arbol_es_requerido, Toasty.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    getLastLocationDenuncia();
+                }else{
+                    Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
+
     }
 
     private void mostrarVistaSolicitud(){
@@ -433,9 +499,21 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                         Uri imageUri = data.getData();
                         try {
                             Bitmap photo = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                            uriImagen = getImageUri(this, photo);
-                            hayImagen = true;
-                            cargar(imageUri);
+
+                            if(estadoSolicitud){ // vista solicitud
+                                uriImagen = getImageUri(this, photo);
+                                hayImagen = true;
+                                cargar(imageUri);
+                            }else{ // vista denuncia
+                                uriImagenDenuncia = getImageUri(this, photo);
+                                hayImagenDenuncia = true;
+                                cargar(imageUri);
+                            }
+
+
+
+
+
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -454,11 +532,21 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
         circularProgressDrawable.setColorSchemeColors(Color.BLUE);
         circularProgressDrawable.start();
 
-        Glide.with(this)
-                .load(uri)
-                .apply(opcionesGlide)
-                .placeholder(circularProgressDrawable)
-                .into(imgFoto);
+        if(estadoSolicitud){
+            Glide.with(this)
+                    .load(uri)
+                    .apply(opcionesGlide)
+                    .placeholder(circularProgressDrawable)
+                    .into(imgFoto);
+        }else{
+            Glide.with(this)
+                    .load(uri)
+                    .apply(opcionesGlide)
+                    .placeholder(circularProgressDrawable)
+                    .into(imgFotoDenuncia);
+        }
+
+
     }
 
 
@@ -520,6 +608,33 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                 });
     }
 
+    @SuppressLint("MissingPermission")
+    private void getLastLocationDenuncia() {
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        latitudGPS = location.getLatitude();
+                        longitudGPS = location.getLongitude();
+                        try {
+                            apiEnviarDatosDenuncia();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        // SIEMPRE SE ENVIARA FOTO, PERO SIN COORDENADAS
+                        try {
+                            apiEnviarDatosDenuncia();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+    }
+
+
+
+
     private KAlertDialog loadingDialog;
 
 
@@ -560,7 +675,7 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                 checkEscri = 1;
             }
 
-            MultipartBody multipartBody = MultipartUtil.createMultipartSolicitudTalaArbol(bytes, iduser, String.valueOf(idServicio), nota, lati, longi,
+            MultipartBody multipartBody = MultipartUtil.createMultipartSolicitudTalaArbol(bytes, iduser, nota, lati, longi,
                     nombre, telefono, direccion, checkEscri);
 
             compositeDisposable.add(
@@ -578,25 +693,12 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                                         if(apiRespuesta != null) {
 
                                             if(apiRespuesta.getSuccess() == 1){
-                                                Toasty.success(this, "entrooo", Toasty.LENGTH_LONG).show();
-
-                                            }
-
-                                            /*if(apiRespuesta.getSuccess() == 1) {
-                                                // HAY SOLICITUD ACTIVA, Y ESTA DENTRO DEL RANGO 20 METROS
-
-                                                alertaSoliActiva(apiRespuesta.getTitulo(), apiRespuesta.getMensaje());
-
-                                            }
-                                            else if(apiRespuesta.getSuccess() == 2) {
-
                                                 Toasty.success(this, getString(R.string.notificacion_enviada), Toasty.LENGTH_LONG).show();
-
-                                                resetear();
+                                                limpiarCamposSolicitud();
                                             }
                                             else{
                                                 mensajeSinConexion();
-                                            }*/
+                                            }
                                         }else{
                                             if (loadingDialog.isShowing()) {
                                                 loadingDialog.dismissWithAnimation();
@@ -614,39 +716,105 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
         }
     }
 
-    private void alertaSoliActiva(String titulo, String mensaje){
-
-        KAlertDialog pDialog = new KAlertDialog(this, KAlertDialog.CUSTOM_IMAGE_TYPE, false);
-
-        pDialog.setCustomImage(R.drawable.ic_informacion);
-
-        pDialog.setTitleText(titulo);
-        pDialog.setTitleTextGravity(Gravity.CENTER);
-        pDialog.setTitleTextSize(19);
-
-        pDialog.setContentText(mensaje);
-        pDialog.setContentTextAlignment(View.TEXT_ALIGNMENT_CENTER, Gravity.START);
-        pDialog.setContentTextSize(17);
-
-        pDialog.setCancelable(false);
-        pDialog.setCanceledOnTouchOutside(false);
-
-        pDialog.confirmButtonColor(R.drawable.codigo_kalert_dialog_corners_confirmar);
-        pDialog.setConfirmClickListener(getString(R.string.aceptar), sDialog -> {
-            sDialog.dismissWithAnimation();
-
-        });
-
-        pDialog.show();
-    }
-
-
-    private void resetear(){
+    private void limpiarCamposSolicitud(){
+        edtNombre.setText("");
+        edtTelefono.setText("");
+        edtDireccion.setText("");
         hayImagen = false;
         uriImagen = null;
         edtNota.setText("");
         imgFoto.setImageResource(R.drawable.camarafoto);
+        checkEscritura.setChecked(false);
     }
+
+
+
+
+
+    // ENVIAR DATOS AL SERVIDOR
+    private void apiEnviarDatosDenuncia() throws IOException {
+
+        if(boolSeguroEnviarDatosDenuncia){
+            boolSeguroEnviarDatosDenuncia = false;
+
+            // Crear el diálogo de carga
+            loadingDialog = new KAlertDialog(this, KAlertDialog.PROGRESS_TYPE, false);
+            loadingDialog.getProgressHelper().setBarColor(R.color.colorPrimary);
+            loadingDialog.setTitleText(getString(R.string.cargando));
+            loadingDialog.setCancelable(false);
+            loadingDialog.show();
+
+            byte[] bytes = null;
+
+            ContentResolver resolver = getContentResolver();
+            InputStream inputStream = resolver.openInputStream(uriImagenDenuncia);
+            bytes = ImageUtils.inputStreamToByteArray(inputStream);
+
+            String iduser = tokenManager.getToken().getId();
+
+
+
+            String nota = edtNotaDenuncia.getText().toString();
+            String lati = String.valueOf(latitudGPS);
+            String longi = String.valueOf(longitudGPS);
+
+
+            MultipartBody multipartBody = MultipartUtil.createMultipartDenunciaTalaArbol(bytes, iduser, nota, lati, longi);
+
+            compositeDisposable.add(
+                    service.registrarDenunciaTalaArbol(multipartBody)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .retry()
+                            .subscribe(apiRespuesta -> {
+
+                                        boolSeguroEnviarDatos = true;
+                                        if (loadingDialog.isShowing()) {
+                                            loadingDialog.dismissWithAnimation();
+                                        }
+
+                                        if(apiRespuesta != null) {
+
+                                            if(apiRespuesta.getSuccess() == 1){
+                                                Toasty.success(this, getString(R.string.notificacion_enviada), Toasty.LENGTH_LONG).show();
+                                                limpiarCamposDenuncia();
+                                            }
+                                            else{
+                                                mensajeSinConexion();
+                                            }
+                                        }else{
+                                            if (loadingDialog.isShowing()) {
+                                                loadingDialog.dismissWithAnimation();
+                                            }
+                                            mensajeSinConexion();
+                                        }
+                                    },
+                                    throwable -> {
+                                        if (loadingDialog.isShowing()) {
+                                            loadingDialog.dismissWithAnimation();
+                                        }
+                                        mensajeSinConexion();
+                                    })
+            );
+        }
+    }
+
+    private void limpiarCamposDenuncia(){
+
+        hayImagenDenuncia = false;
+        uriImagenDenuncia = null;
+        edtNotaDenuncia.setText("");
+        imgFotoDenuncia.setImageResource(R.drawable.camarafoto);
+    }
+
+
+
+
+
+
+
+
+
 
 
     void mensajeSinConexion(){

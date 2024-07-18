@@ -20,12 +20,10 @@ public class MultipartUtil {
                 .addFormDataPart("latitud", latitud)
                 .addFormDataPart("longitud", longitud)
                 .build();
-
-
     }
 
 
-    public static MultipartBody createMultipartSolicitudTalaArbol(byte[] imageData, String iduser, String tiposervicio, String nota, String latitud, String longitud,
+    public static MultipartBody createMultipartSolicitudTalaArbol(byte[] imageData, String iduser, String nota, String latitud, String longitud,
                                                                   String nombre, String telefono, String direccion, int checkEscri) {
 
 
@@ -35,17 +33,39 @@ public class MultipartUtil {
         return new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("imagen", "image.jpg", imagenBody)
-                .addFormDataPart("iduser", iduser)
-                .addFormDataPart("idservicio", tiposervicio)
+                .addFormDataPart("iduser", iduser) //*
+                .addFormDataPart("nombre", nombre) //*
+                .addFormDataPart("telefono", telefono) //*
+                .addFormDataPart("direccion", direccion) //*
+                .addFormDataPart("escritura", String.valueOf(checkEscri)) //*
+
                 .addFormDataPart("nota", nota)
                 .addFormDataPart("latitud", latitud)
                 .addFormDataPart("longitud", longitud)
-                .addFormDataPart("nombre", nombre)
-                .addFormDataPart("telefono", telefono)
-                .addFormDataPart("direccion", direccion)
-                .addFormDataPart("escritura", String.valueOf(checkEscri))
+
                 .build();
-
-
     }
+
+
+    public static MultipartBody createMultipartDenunciaTalaArbol(byte[] imageData, String iduser, String nota, String latitud, String longitud) {
+
+
+        RequestBody imagenBody = RequestBody.create(MediaType.parse("image/*"), imageData);
+
+        // Crear el MultipartBody que contiene la imagen, el nombre y el apellido
+        return new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("imagen", "image.jpg", imagenBody)
+                .addFormDataPart("iduser", iduser)
+                .addFormDataPart("nota", nota)
+                .addFormDataPart("latitud", latitud)
+                .addFormDataPart("longitud", longitud)
+
+                .build();
+    }
+
+
+
+
+
 }

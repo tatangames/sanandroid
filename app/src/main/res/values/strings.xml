@@ -64,8 +64,9 @@
     <string name="nombre_es_requerido">Nombre es requerido</string>
     <string name="direccion_es_requerido">Dirección es requerido</string>
     <string name="imagen_arbol_es_requerido">Imagen del Árbol es requerido</string>
-
-
+    <string name="nota_es_requerida">Nota es requerida</string>
+    <string name="notas">Notas</string>
+    <string name="whatsapp_no_instalado">Whatsapp No Instalado</string>
 
 
 

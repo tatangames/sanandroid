@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import static androidx.browser.customtabs.CustomTabsClient.getPackageName;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -65,7 +66,7 @@ public class FragmentPrincipal extends Fragment {
     // FORMA PARA MOSTRAR AL USUARIO SI HAY UN NUEVO TIPO SERVICIO Y QUE ACTUALICE APLICACION
 
     // 1- SERVICIO BASICO (bacheo, alumbrado, desechos solidos)
-    public static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1,2);
+    public static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1,2,3);
 
     private boolean boolCartelUpdateServicio = true;
 
@@ -269,6 +270,22 @@ public class FragmentPrincipal extends Fragment {
                 intent.putExtra("KEY_TITULO", titulo);
                 intent.putExtra("KEY_NOTA", descripcion); // DESCRIPCION
                 startActivity(intent);
+            }
+            else if(tipoServicio == 3){
+
+                String numero = "50375825072";
+
+                // DENUNCIA A WASSAP
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                String url = "https://wa.me/" + numero;
+                intent.setData(Uri.parse(url));
+
+                try {
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    // WhatsApp no está instalado
+                    Toasty.info(getActivity(), getString(R.string.whatsapp_no_instalado)).show();
+                }
             }
 
         }else{
