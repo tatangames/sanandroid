@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
@@ -67,17 +68,24 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class ServicioBasicoActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
 
+
+    // ENVIO DE SERVICIOS BASICOS
+
+    private int idServicio = 0;
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
 
     private TextView txtToolbar, tituloServicio;
     private ImageView imgFlechaAtras, imgFoto;
-    private int idServicio = 0;
+
     private TextInputEditText edtNota;
 
-    private boolean bottomSheetImagen = false;
+    private KAlertDialog loadingDialog;
 
-    private boolean hayImagen = false;
+    private boolean bottomSheetImagen = false, hayImagen = false,
+            boolSeguroEnviarDatos = true;
+
 
     // PERMISOS PARA CAMARA Y GALERIA
 
@@ -96,7 +104,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             Manifest.permission.READ_MEDIA_IMAGES,
     };
 
-
     private boolean is_storage_image_permitted = false;
 
     private boolean allPermissionResultCheck(){
@@ -107,9 +114,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     private double latitudGPS = 0;
     private double longitudGPS = 0;
 
-    private boolean boolSeguroEnviarDatos = true;
-
-
     private ApiService service;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -118,7 +122,15 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
     private TokenManager tokenManager;
 
-    private Uri uriImagen = null;
+    private Bitmap bitmapFoto = null;
+
+    private RequestOptions opcionesGlide = new RequestOptions()
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .skipMemoryCache(true)
+            .placeholder(R.drawable.camaradefecto)
+            .priority(Priority.NORMAL);
+
+
 
 
     @Override
@@ -148,10 +160,8 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         }
 
         int colorProgress = ContextCompat.getColor(this, R.color.barraProgreso);
-
         tokenManager = TokenManager.getInstance(getSharedPreferences("prefs", MODE_PRIVATE));
         service = RetrofitBuilder.createServiceAutentificacion(ApiService.class, tokenManager);
-
         progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleLarge);
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100, 100);
         params.addRule(RelativeLayout.CENTER_IN_PARENT);
@@ -160,7 +170,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         progressBar.setVisibility(View.GONE);
 
 
-
+        // LIMITAR CARACTERES
         InputFilter[] filterArray = new InputFilter[1];
         filterArray[0] = new InputFilter.LengthFilter(1000);
         edtNota.setFilters(filterArray);
@@ -169,6 +179,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             finish();
         });
 
+        // OBTENER LOCALIZACION
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         imgFoto.setOnClickListener(v -> {
@@ -187,11 +198,13 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         LOCATION_PERMISSION_REQUEST_CODE);
             } else {
-                if(hayImagen){
-                    getLastLocation();
-                }else{
+
+                if(!hayImagen){
                     Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
+                    return;
                 }
+
+                getLastLocation();
             }
         });
 
@@ -201,24 +214,16 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                     if (result.getResultCode() == RESULT_OK) {
                         Intent data = result.getData();
                         if (data != null && data.getExtras() != null) {
-                            Bitmap photo = (Bitmap) data.getExtras().get("data");
-                            if(photo != null){
-                                hayImagen = true;
-                                imgFoto.setImageBitmap(photo);
-                                uriImagen = getImageUri(this, photo);
-                            }
+
+                            bitmapFoto = (Bitmap) data.getExtras().get("data");
+                            hayImagen = true;
+                            imgFoto.setImageBitmap(bitmapFoto);
                         }
                     }
                 }
         );
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 80, bytes); // Used for compression rate of the Image : 100 means no compression
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "xyz", null);
-        return Uri.parse(path);
-    }
 
     private void abrirBottomDialog(){
         if (!bottomSheetImagen) {
@@ -266,11 +271,12 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         }
     }
 
-
+    // YA CON PERMISO, ABRIRA CAMARA
     private void openCamera() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         cameraLauncher.launch(cameraIntent);
     }
+
 
 
     @Override
@@ -282,6 +288,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             abrirGaleria();
         }
     }
+
 
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
@@ -315,7 +322,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
 
 
-
     private void verificarPermisoGaleria(){
         if (sdkVersion >= Build.VERSION_CODES.TIRAMISU) {
             // El dispositivo ejecuta Android 13 o superior.
@@ -341,7 +347,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             if(EasyPermissions.hasPermissions(this,
                     perms)){
                 // permiso autorizado
-
                 // aqui ya puede abrir galeria
 
                 abrirGaleria();
@@ -356,8 +361,9 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         }
     }
 
-    private void abrirGaleria(){
 
+    // YA CON PERMISO ABRIRA GALERIA
+    private void abrirGaleria(){
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         launcherGaleria.launch(intent);
     }
@@ -371,10 +377,15 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                     if (data != null) {
                         Uri imageUri = data.getData();
                         try {
-                            Bitmap photo = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                            uriImagen = getImageUri(this, photo);
+
+                            InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                            bitmapFoto = BitmapFactory.decodeStream(imageStream);
                             hayImagen = true;
-                            cargar(imageUri);
+
+                            Glide.with(this)
+                                    .load(bitmapFoto)
+                                    .apply(opcionesGlide)
+                                    .into(imgFoto);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -382,30 +393,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                 }
             }
     );
-
-
-
-    private void cargar(Uri uri){
-
-        CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(this);
-        circularProgressDrawable.setStrokeWidth(5f);
-        circularProgressDrawable.setCenterRadius(30f);
-        circularProgressDrawable.setColorSchemeColors(Color.BLUE);
-        circularProgressDrawable.start();
-
-        Glide.with(this)
-                .load(uri)
-                .apply(opcionesGlide)
-                .placeholder(circularProgressDrawable)
-                .into(imgFoto);
-    }
-
-
-    RequestOptions opcionesGlide = new RequestOptions()
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .skipMemoryCache(true)
-            .placeholder(R.drawable.camaradefecto)
-            .priority(Priority.NORMAL);
 
 
 
@@ -459,9 +446,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             });
     }
 
-    private KAlertDialog loadingDialog;
-
-
 
 
     // ENVIAR DATOS AL SERVIDOR
@@ -479,9 +463,11 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
             byte[] bytes = null;
 
-            ContentResolver resolver = getContentResolver();
-            InputStream inputStream = resolver.openInputStream(uriImagen);
-            bytes = ImageUtils.inputStreamToByteArray(inputStream);
+            try {
+                bytes = ImageUtils.inputStreamToByteArray(bitmapFoto);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
             String iduser = tokenManager.getToken().getId();
 
@@ -566,7 +552,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
     private void resetear(){
         hayImagen = false;
-        uriImagen = null;
         edtNota.setText("");
         imgFoto.setImageResource(R.drawable.camarafoto);
     }
@@ -576,14 +561,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         progressBar.setVisibility(View.GONE);
         Toasty.error(this, getString(R.string.error_intentar_de_nuevo)).show();
     }
-
-
-    private void hideLoadingDialog() {
-        if (loadingDialog.isShowing()) {
-            loadingDialog.dismissWithAnimation();
-        }
-    }
-
 
 
     @Override
@@ -601,10 +578,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     }
 
 
-
-
-
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -619,6 +592,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         }
     }
 
+
     private void alertDialogoPermiso(){
         new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.permiso_requerido))
@@ -628,6 +602,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                 .create()
                 .show();
     }
+
 
     private void openAppSettings() {
         Intent intent = new Intent();

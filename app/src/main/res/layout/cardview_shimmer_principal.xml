@@ -20,195 +20,128 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
     <LinearLayout
-        android:id="@+id/bloque1"
+        android:id="@+id/contenedor1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="10dp"
-        android:layout_marginEnd="16dp"
-        android:layout_margin="10dp"
         android:orientation="horizontal"
+        android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView">
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:backgroundTint="@color/grisBloque"
-            app:cardCornerRadius="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:backgroundTint="@color/grisBloque"
-            app:cardCornerRadius="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:background="@drawable/rounded_corner"
+                    android:scaleType="centerCrop" />
 
 
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:background="@drawable/rounded_corner"
+                android:scaleType="centerCrop" />
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
     </LinearLayout>
+
 
     <LinearLayout
-        android:id="@+id/bloque2"
+        android:id="@+id/contenedor2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="16dp"
-        android:layout_margin="10dp"
         android:orientation="horizontal"
+        android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bloque1">
+        app:layout_constraintTop_toBottomOf="@+id/contenedor1">
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:backgroundTint="@color/grisBloque"
-            app:cardCornerRadius="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:background="@drawable/rounded_corner"
+                android:scaleType="centerCrop" />
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:backgroundTint="@color/grisBloque"
-            app:cardCornerRadius="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:background="@drawable/rounded_corner"
+                android:scaleType="centerCrop" />
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
 
     </LinearLayout>
+
 
     <LinearLayout
-        android:id="@+id/bloque3"
+        android:id="@+id/contenedor3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="16dp"
-        android:layout_margin="10dp"
         android:orientation="horizontal"
+        android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bloque2">
+        app:layout_constraintTop_toBottomOf="@+id/contenedor2">
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:backgroundTint="@color/grisBloque"
-            app:cardCornerRadius="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:background="@drawable/rounded_corner"
+                android:scaleType="centerCrop" />
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:backgroundTint="@color/grisBloque"
-            app:cardCornerRadius="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:background="@drawable/rounded_corner"
+                android:scaleType="centerCrop" />
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
 
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/bloque4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="16dp"
-        android:layout_margin="10dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bloque3">
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:backgroundTint="@color/grisBloque"
-            app:cardCornerRadius="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:backgroundTint="@color/grisBloque"
-            app:cardCornerRadius="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
-    </LinearLayout>
-
-
 
 
 

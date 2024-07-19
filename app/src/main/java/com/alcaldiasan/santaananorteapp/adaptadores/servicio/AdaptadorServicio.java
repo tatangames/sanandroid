@@ -81,7 +81,7 @@ public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.My
 
 
         if (SUPPORTED_TYPES.contains(miModelo.getTiposervicio())) {
-            holder.vistaConstraint.setBackgroundColor(ContextCompat.getColor(context, R.color.c_blanco));
+            holder.vistaConstraint.setBackgroundColor(ContextCompat.getColor(context, R.color.blanco));
         }else{
             holder.vistaConstraint.setBackgroundColor(ContextCompat.getColor(context, R.color.grisBloque));
         }
