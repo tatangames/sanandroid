@@ -54,9 +54,9 @@ public class FragmentLogin extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View vista = inflater.inflate(R.layout.priueba, container, false);
+        View vista = inflater.inflate(R.layout.fragment_login, container, false);
 
-        /*edtTelefono = vista.findViewById(R.id.edtTelefono);
+        edtTelefono = vista.findViewById(R.id.edtTelefono);
         btnRegistro = vista.findViewById(R.id.btnRegistro);
         rootRelative = vista.findViewById(R.id.root);
 
@@ -119,7 +119,7 @@ public class FragmentLogin extends Fragment {
             public void afterTextChanged(Editable s) {
                 // No action needed here
             }
-        });*/
+        });
 
         return vista;
     }
@@ -175,7 +175,7 @@ public class FragmentLogin extends Fragment {
             }, 1000);
 
 
-            String mensaje = getString(R.string.verificar_el_numero_de_telefono) + "\n +503 " + telefono;
+            String mensaje = getString(R.string.verificar_el_numero_de_telefono);
 
             KAlertDialog pDialog = new KAlertDialog(getContext(), KAlertDialog.CUSTOM_IMAGE_TYPE, false);
 

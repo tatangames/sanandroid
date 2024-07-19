@@ -3,10 +3,10 @@ package com.alcaldiasan.santaananorteapp.activity.servicios.talaarbol;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
@@ -16,12 +16,10 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputFilter;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -32,6 +30,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -55,10 +54,11 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import es.dmoral.toasty.Toasty;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -69,6 +69,10 @@ import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class TalaArbolActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
+
+
+    Bitmap photoBitmapGlobal;
+
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
@@ -175,7 +179,6 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
             }
         });
 
-
         if (getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
             String titulo = bundle.getString("KEY_TITULO");
@@ -264,6 +267,8 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
             }
         });
 
+
+
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -271,17 +276,21 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                         Intent data = result.getData();
                         if (data != null && data.getExtras() != null) {
                             Bitmap photo = (Bitmap) data.getExtras().get("data");
+                            photoBitmapGlobal = (Bitmap) data.getExtras().get("data");
+
                             if(photo != null){
+
+
 
                                 if(estadoSolicitud){ // vista solicitud
                                     hayImagen = true;
                                     imgFoto.setImageBitmap(photo);
-                                    uriImagen = getImageUri(this, photo);
+                                    //uriImagen = getImageUri(this, photo);
 
                                 }else{ // vista denuncia
                                     hayImagenDenuncia = true;
                                     imgFotoDenuncia.setImageBitmap(photo);
-                                    uriImagenDenuncia = getImageUri(this, photo);
+                                   // uriImagenDenuncia = getImageUri(this, photo);
                                 }
                             }
                         }
@@ -328,7 +337,6 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
         });
 
 
-
     }
 
     private void mostrarVistaSolicitud(){
@@ -339,13 +347,6 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
     private void mostrarVistaDenuncia(){
         constraintSolicitud.setVisibility(View.GONE);
         constraintDenuncia.setVisibility(View.VISIBLE);
-    }
-
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 80, bytes); // Used for compression rate of the Image : 100 means no compression
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "xyz", null);
-        return Uri.parse(path);
     }
 
     private void abrirBottomDialog(){
@@ -483,13 +484,16 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
         }
     }
 
+    private static final int PICK_IMAGE_REQUEST = 1;
+
+
     private void abrirGaleria(){
 
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         launcherGaleria.launch(intent);
     }
 
-    ActivityResultLauncher<Intent> launcherGaleria = registerForActivityResult(
+ ActivityResultLauncher<Intent> launcherGaleria = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK) {
@@ -497,30 +501,91 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                     Intent data = result.getData();
                     if (data != null) {
                         Uri imageUri = data.getData();
-                        try {
-                            Bitmap photo = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
 
-                            if(estadoSolicitud){ // vista solicitud
-                                uriImagen = getImageUri(this, photo);
-                                hayImagen = true;
-                                cargar(imageUri);
+                        try {
+                            // Obtener el Bitmap de la imagen seleccionada
+                            InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                            Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+
+                          if(estadoSolicitud){ // vista solicitud
+                            uriImagen = data.getData();
+                            hayImagen = true;
+                            cargar(imageUri);
                             }else{ // vista denuncia
-                                uriImagenDenuncia = getImageUri(this, photo);
+                               // uriImagenDenuncia = getImageUri(this, selectedImage);
                                 hayImagenDenuncia = true;
                                 cargar(imageUri);
                             }
 
+                            // Aquí puedes guardar la imagen si es necesario
+                            // guardarImagen(selectedImage);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
 
 
-
-
-                        } catch (IOException e) {
+                        /*InputStream imageStream = null;
+                        try {
+                            imageStream = getContentResolver().openInputStream(imageUri);
+                        } catch (FileNotFoundException e) {
                             throw new RuntimeException(e);
                         }
+
+                        Bitmap photo = BitmapFactory.decodeStream(imageStream);
+
+                       */
+
+                        /*if(estadoSolicitud){ // vista solicitud
+                            uriImagen = getImageUri(this, photo);
+                            hayImagen = true;
+                            cargar(imageUri);
+                        }else{ // vista denuncia
+                            uriImagenDenuncia = getImageUri(this, photo);
+                            hayImagenDenuncia = true;
+                            cargar(imageUri);
+                        }*/
+
                     }
                 }
             }
     );
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri imageUri = data.getData();
+            try {
+                // Procesar la imagen seleccionada (p. ej., mostrarla en ImageView)
+                InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                Bitmap photo = BitmapFactory.decodeStream(imageStream);
+
+                /*if(estadoSolicitud){ // vista solicitud
+                    uriImagen = getImageUri(this, photo);
+                    hayImagen = true;
+                    cargar(imageUri);
+                }else{ // vista denuncia
+                    uriImagenDenuncia = getImageUri(this, photo);
+                    hayImagenDenuncia = true;
+                    cargar(imageUri);
+                }*/
+
+
+
+                // Aquí puedes guardar la imagen si es necesario, asegurándote de no duplicarla
+                // guardarImagen(imageUri);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+
+
 
 
 
@@ -746,9 +811,10 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
 
             byte[] bytes = null;
 
-            ContentResolver resolver = getContentResolver();
-            InputStream inputStream = resolver.openInputStream(uriImagenDenuncia);
-            bytes = ImageUtils.inputStreamToByteArray(inputStream);
+            //ContentResolver resolver = getContentResolver();
+            //InputStream inputStream = resolver.openInputStream(uriImagenDenuncia);
+
+            bytes = ImageUtils.inputStreamToByteArray2(photoBitmapGlobal);
 
             String iduser = tokenManager.getToken().getId();
 

@@ -1,15 +1,15 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SantaAnaNorteApp"  parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
 
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Customize your theme here. -->
 
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/negro</item>
 
         <item name="colorSecondary">@color/rojoF44336</item>
-        <item name="colorSecondaryVariant">@color/gris616161</item>
+        <item name="colorSecondaryVariant">@color/grisAAA</item>
         <item name="colorOnSecondary">@color/rojoF44336</item>
 
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
@@ -19,53 +19,7 @@
         <item name="bottomNavigationStyle">@style/AppBottomNavigationView</item>
 
         <item name="android:popupMenuStyle">@style/PopupMenu</item>
-
-        <item name="colorControlNormal">@color/c_blanco</item>
-
     </style>
-
-    <style name="Theme.SantaAnaNorteApp" parent="Base.Theme.SantaAnaNorteApp" />
-
-
-
-
-    <!-- ESTILO BOTON CON ESTILO REDONDEADO SIN UTILIZAR TEMAS -->
-    <style name="BotonEstiloNoTemaV1" parent="Widget.MaterialComponents.Button">
-        <!-- Puedes quitar el atributo colorPrimary aquí -->
-        <item name="android:background">@drawable/codigo_boton_redondeado_v1</item>
-        <item name="android:textColor">@color/c_blanco</item>
-        <item name="backgroundTint">@color/c_azulv1</item>
-    </style>
-
-    <!-- ESTO LO LLEVARA TODOS LOS TEXT INPUT LAYOUT -->
-    <style name="Text_Input_Layout_Estilo_v1" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
-        <!-- Otros atributos de estilo aquí -->
-        <item name="android:background">@color/blanco</item>
-        <item name="hintTextColor">@color/gris616161</item>
-        <item name="boxBackgroundColor">@android:color/transparent</item>
-        <item name="cursorColor">@color/colorPrimary</item>
-        <item name="boxStrokeColor">@color/gris616161</item>
-        <item name="boxStrokeWidth">2dp</item>
-    </style>
-
-
-
-    <!-- ESTO LO LLEVARA TODOS LOS TEXT INPUT LAYOUT PARA LOS ERRORES -->
-    <style name="Text_Input_Layout_Error_Apariencia" parent="@android:style/TextAppearance">
-        <item name="errorTextColor">@color/rojoF44336</item>
-        <item name="android:textSize">12sp</item>
-    </style>
-
-    <!-- ESTO LO LLEVARA TODOS LOS INPUT EDIT TEXT -->
-    <style name="Input_Edit_Text_Tema" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
-        <item name="android:textColor">@color/negro</item>
-    </style>
-
-    <!-- LO LLEVA TODOS LOS TEXT INPUT EDIT TEXT PARA EL app:hintTextAppearance -->
-    <style name="Input_Edit_Text_Hint_Input" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
-        <item name="android:textSize">18sp</item>
-    </style>
-
 
 
     <style name="AppBottomNavigationView" parent="Widget.Design.BottomNavigationView">
@@ -93,10 +47,85 @@
     </style>
 
 
+    <!-- ESTILO BOTON CON ESTILO REDONDEADO SIN UTILIZAR TEMAS -->
+    <style name="BotonEstiloNoTemaV1" parent="Widget.MaterialComponents.Button">
+        <!-- Puedes quitar el atributo colorPrimary aquí -->
+        <item name="android:background">@drawable/codigo_boton_redondeado_v1</item>
+        <item name="android:textColor">@color/blanco</item>
+        <item name="backgroundTint">@color/c_azulv1</item>
+    </style>
+
+    <!-- ESTO LO LLEVARAN TODOS LOS FONDOS PARA COLOR  BLANCO/OSCURO SEGUN TEMA. -->
+    <style name="Fondo_Estilo_Tema_v1">
+        <item name="android:background">@color/blanco</item>
+    </style>
+
+    <!-- PARA TINTAR LAS FLECHAS SEGUN TEMA -->
+    <style name="Flecha_Tema_V1">
+        <item name="android:tint">@color/negro</item>
+    </style>
+
+    <!-- ESTO LO LLEVARA TODOS LOS TEXT INPUT LAYOUT -->
+    <style name="Text_Input_Layout_Estilo_v1" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <!-- Otros atributos de estilo aquí -->
+        <item name="android:background">@color/blanco</item>
+        <item name="hintTextColor">@color/gris616161</item>
+        <item name="boxBackgroundColor">@android:color/transparent</item>
+        <item name="cursorColor">@color/colorPrimary</item>
+        <item name="boxStrokeColor">@color/gris616161</item>
+        <item name="boxStrokeWidth">2dp</item>
+    </style>
+
+    <!-- ESTO LO LLEVARA TODOS LOS TEXT INPUT LAYOUT PARA LOS ERRORES -->
+    <style name="Text_Input_Layout_Error_Apariencia" parent="@android:style/TextAppearance">
+        <item name="errorTextColor">@color/rojoF44336</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- ESTO LO LLEVARA TODOS LOS INPUT EDIT TEXT -->
+    <style name="Input_Edit_Text_Tema" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="android:textColor">@color/negro</item>
+    </style>
+
+    <!-- LO LLEVA TODOS LOS TEXT INPUT EDIT TEXT PARA EL app:hintTextAppearance -->
+    <style name="Input_Edit_Text_Hint_Input" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <!-- ESTO LO LLEVARA TODOS LOS SPINNER -->
+    <style name="Spinner_Estilo_v1" parent="Widget.AppCompat.Spinner">
+
+    </style>
+
+    <!-- UTILIZADO POR ShapeableImageView -->
+    <style name="Radio_Shapeable_Imageview">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+
+    <!-- ESTILO PARA TAB LAYOUT DE FRAGMENT INICIO-->
+    <style name="TabLayoutFragmentInicio" parent="TextAppearance.Design.Tab">
+        <item name="textAllCaps">false</item>
+        <item name="android:dividerPadding">3dp</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- DIVISION PARA SEPARADOR EN cardview_bottomsheet_racha-->
+    <style name="Separador_Racha_v1">
+        <item name="android:background">@color/blanco</item>
+    </style>
+
+    <style name="Separador_Hitos_v1">
+        <item name="android:background">@color/negro</item>
+    </style>
+
+
     <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
         <item name="android:popupBackground">@color/blanco</item>
         <item name="android:textColor">@color/negro</item>
     </style>
+
 
 
     <style name="NavMenuItemStyle" parent="TextAppearance.AppCompat.Body1">
@@ -111,6 +140,7 @@
         <item name="android:textColor">@color/c_negro</item>
         <item name="fontFamily">@font/montserratmedium</item>
     </style>
+
 
 
 

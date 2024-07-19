@@ -91,7 +91,7 @@
                         android:layout_height="48dp"
                         android:layout_weight="1"
                         android:hint="@string/numero_de_telefono"
-                        android:inputType="phone"
+                        android:inputType="phone|number"
                         android:maxLength="9"
                         android:singleLine="true"
                         android:textColorHint="@color/negro"

@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import static androidx.browser.customtabs.CustomTabsClient.getPackageName;
 
+import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -12,6 +13,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -247,8 +250,20 @@ public class FragmentPrincipal extends Fragment {
         startActivity(intent);
     }
 
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
 
     public void servicioSeleccionado(int tipoServicio, int id, String titulo, String descripcion){
+
+
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+
+        }
 
         // Verificar si el tipo de servicio está soportado
         if (SUPPORTED_TYPES.contains(tipoServicio)) {
@@ -273,6 +288,8 @@ public class FragmentPrincipal extends Fragment {
             }
             else if(tipoServicio == 3){
 
+                // NUMERO DE TELEFONO PARA DENUNCIA
+
                 String numero = "50375825072";
 
                 // DENUNCIA A WASSAP
@@ -291,6 +308,10 @@ public class FragmentPrincipal extends Fragment {
         }else{
             dialogoNuevoServicioDisponible();
         }
+
+
+
+
     }
 
 

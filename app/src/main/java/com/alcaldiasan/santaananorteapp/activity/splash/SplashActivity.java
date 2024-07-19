@@ -135,9 +135,6 @@ public class SplashActivity extends AppCompatActivity implements EasyPermissions
                     }
                 }
         );
-
-
-
     }
 
 
