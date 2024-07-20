@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.activity.login.LoginActivity;
+import com.alcaldiasan.santaananorteapp.activity.principal.PrincipalActivity;
 import com.alcaldiasan.santaananorteapp.activity.servicios.basico.ServicioBasicoActivity;
 import com.alcaldiasan.santaananorteapp.activity.servicios.talaarbol.TalaArbolActivity;
 import com.alcaldiasan.santaananorteapp.adaptadores.principal.AdaptadorPrincipal;
@@ -85,6 +86,10 @@ public class FragmentPrincipal extends Fragment {
         shimmerFrameLayout = vista.findViewById(R.id.shimmer);
         contenedorShimmer = vista.findViewById(R.id.contenedorShimmer);
         recyclerView = vista.findViewById(R.id.recyclerView);
+
+        ((PrincipalActivity)getActivity()).setActionBarTitle(getString(R.string.app_name));
+
+
 
         tokenManager = TokenManager.getInstance(getActivity().getSharedPreferences("prefs", MODE_PRIVATE));
         service = RetrofitBuilder.createServiceAutentificacion(ApiService.class, tokenManager);

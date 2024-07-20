@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.activity.login.LoginActivity;
 import com.alcaldiasan.santaananorteapp.fragmentos.principal.FragmentPrincipal;
+import com.alcaldiasan.santaananorteapp.fragmentos.solicitudes.FragmentSolicitudes;
 import com.alcaldiasan.santaananorteapp.network.TokenManager;
 import com.developer.kalert.KAlertDialog;
 import com.google.android.material.navigation.NavigationView;
@@ -25,6 +26,8 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.Objects;
 
 public class PrincipalActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    // PANTALLA PRINCIPAL
 
     private TextView navNombre;
     private TokenManager tokenManager;
@@ -94,6 +97,10 @@ public class PrincipalActivity extends AppCompatActivity implements NavigationVi
         if (id == R.id.nav_servicios) {
             fragment = new FragmentPrincipal();
         }
+        else if (id == R.id.nav_solicitudes) {
+            fragment = new FragmentSolicitudes();
+        }
+
         else if(id == R.id.nav_cerrar){
             cerrarSesion();
         }

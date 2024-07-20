@@ -5,23 +5,13 @@
     android:id="@+id/rootRelative"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/c_blanco">
-
-    <include
-        android:id="@+id/toolbarCon"
-        layout="@layout/toolbar_v1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+    android:background="@color/c_blanco"
+    android:focusableInTouchMode="true">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/toolbarCon"/>
+        android:layout_height="match_parent" />
 
 
 </RelativeLayout>
-
-

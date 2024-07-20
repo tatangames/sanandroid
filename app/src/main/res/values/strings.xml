@@ -68,6 +68,10 @@
     <string name="notas">Notas</string>
     <string name="whatsapp_no_instalado">Whatsapp No Instalado</string>
     <string name="permiso_localizacion_es_requerido">Permiso de localización es Requerido</string>
+    <string name="solicitudes">Solicitudes</string>
+    <string name="borrar_solicitud">Borrar Solicitud</string>
+    <string name="ocultar_solicitud">Ocultar Solicitud</string>
+
 
 
 </resources>

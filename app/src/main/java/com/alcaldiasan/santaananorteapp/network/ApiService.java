@@ -2,6 +2,7 @@ package com.alcaldiasan.santaananorteapp.network;
 
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloSolicitud;
+import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloSolicitudContenedor;
 import com.alcaldiasan.santaananorteapp.modelos.telefono.ModeloVerificacion;
 import com.alcaldiasan.santaananorteapp.modelos.usuario.ModeloUsuario;
 
@@ -57,9 +58,15 @@ public interface ApiService {
     @POST("app/servicios/talaarbol-denuncia/registrar")
     Observable<ModeloSolicitud> registrarDenunciaTalaArbol(@Body RequestBody body);
 
+    // LISTADO DE SOLICITUDES
+    @POST("app/solicitudes/listado")
+    @FormUrlEncoded
+    Observable<ModeloSolicitudContenedor> listadoSolicitudes(@Field("iduser") String iduser);
 
-
-
+    // OCULTAR SOLICITUD
+    @POST("app/solicitudes/ocultar")
+    @FormUrlEncoded
+    Observable<ModeloSolicitudContenedor> ocultarSolicitudes(@Field("id") int id, @Field("tipo") int tipo);
 
 
 

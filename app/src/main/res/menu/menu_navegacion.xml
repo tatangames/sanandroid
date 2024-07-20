@@ -9,6 +9,12 @@
         android:title="@string/servicios" />
 
     <item
+        android:id="@+id/nav_solicitudes"
+        android:icon="@drawable/ic_info"
+        android:checkable="true"
+        android:title="@string/solicitudes" />
+
+    <item
         android:id="@+id/nav_cerrar"
         android:icon="@drawable/ic_logout"
         android:checkable="true"
