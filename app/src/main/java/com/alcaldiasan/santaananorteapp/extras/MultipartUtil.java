@@ -55,7 +55,7 @@ public class MultipartUtil {
         // Crear el MultipartBody que contiene la imagen, el nombre y el apellido
         return new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("imagen", "image.jpg", imagenBody)
+                .addFormDataPart("imagen", "image.png", imagenBody)
                 .addFormDataPart("iduser", iduser)
                 .addFormDataPart("nota", nota)
                 .addFormDataPart("latitud", latitud)

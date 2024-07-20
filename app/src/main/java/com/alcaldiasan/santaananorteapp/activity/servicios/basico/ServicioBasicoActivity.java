@@ -13,6 +13,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputFilter;
@@ -35,9 +36,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.alcaldiasan.santaananorteapp.R;
+import com.alcaldiasan.santaananorteapp.activity.servicios.talaarbol.TalaArbolActivity;
 import com.alcaldiasan.santaananorteapp.extras.ImageUtils;
 import com.alcaldiasan.santaananorteapp.extras.MultipartUtil;
 import com.alcaldiasan.santaananorteapp.network.ApiService;
@@ -54,6 +57,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -131,6 +135,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             .priority(Priority.NORMAL);
 
 
+    private String currentPhotoPath;
 
 
     @Override
@@ -212,13 +217,9 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        Intent data = result.getData();
-                        if (data != null && data.getExtras() != null) {
-
-                            bitmapFoto = (Bitmap) data.getExtras().get("data");
-                            hayImagen = true;
-                            imgFoto.setImageBitmap(bitmapFoto);
-                        }
+                        bitmapFoto = BitmapFactory.decodeFile(currentPhotoPath);
+                        hayImagen = true;
+                        imgFoto.setImageBitmap(bitmapFoto);
                     }
                 }
         );
@@ -273,8 +274,27 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
     // YA CON PERMISO, ABRIRA CAMARA
     private void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraLauncher.launch(cameraIntent);
+       /* Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraLauncher.launch(cameraIntent);*/
+
+
+        String fileName = "photo";
+        File storageDirectory = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        try {
+            File imageFile = File.createTempFile(fileName, ".jpg", storageDirectory);
+
+            currentPhotoPath = imageFile.getAbsolutePath();
+
+            Uri imageUri = FileProvider.getUriForFile(ServicioBasicoActivity.this, "com.alcaldiasan.santaananorteapp.fileprovider", imageFile);
+
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+            cameraLauncher.launch(cameraIntent);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

@@ -2,16 +2,15 @@ package com.alcaldiasan.santaananorteapp.activity.servicios.talaarbol;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputFilter;
@@ -30,13 +29,12 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
+import androidx.core.content.FileProvider;
 
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.extras.ImageUtils;
@@ -54,16 +52,18 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import okhttp3.MultipartBody;
+
 import es.dmoral.toasty.Toasty;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.MultipartBody;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -145,6 +145,9 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
     private CheckBox checkEscritura;
 
     private boolean estadoSolicitud = true;
+
+    private String currentPhotoPath;
+
 
 
     @Override
@@ -277,28 +280,30 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
         });
 
 
+
+
+
+
         // OBTENER IMAGEN DE LA CAMARA
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        Intent data = result.getData();
-                        if (data != null && data.getExtras() != null) {
 
-                            if(estadoSolicitud){
-                                photoBitmapSolicitud = (Bitmap) data.getExtras().get("data");
-                                hayImagenSolicitud = true;
-                                imgFotoSolicitud.setImageBitmap(photoBitmapSolicitud);
+                        if(estadoSolicitud){
+                            photoBitmapSolicitud = BitmapFactory.decodeFile(currentPhotoPath);
+                            hayImagenSolicitud = true;
+                            imgFotoSolicitud.setImageBitmap(photoBitmapSolicitud);
 
-                            }else{
-                                photoBitmapDenuncia = (Bitmap) data.getExtras().get("data");
-                                hayImagenDenuncia = true;
-                                imgFotoDenuncia.setImageBitmap(photoBitmapDenuncia);
-                            }
+                        }else{
+                            photoBitmapDenuncia = BitmapFactory.decodeFile(currentPhotoPath);
+                            hayImagenDenuncia = true;
+                            imgFotoDenuncia.setImageBitmap(photoBitmapDenuncia);
                         }
                     }
                 }
         );
+
 
 
         // BOTON PARA DENUNCIAS
@@ -395,13 +400,43 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
     }
 
 
+
     // ABRIR CAMARA YA CON PERMISO AUTORIZADO
     private void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraLauncher.launch(cameraIntent);
+
+        String fileName = "photo";
+        File storageDirectory = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        try {
+            File imageFile = File.createTempFile(fileName, ".jpg", storageDirectory);
+
+            currentPhotoPath = imageFile.getAbsolutePath();
+
+            Uri imageUri = FileProvider.getUriForFile(TalaArbolActivity.this, "com.alcaldiasan.santaananorteapp.fileprovider", imageFile);
+
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+            cameraLauncher.launch(cameraIntent);
+           // startActivityForResult(cameraIntent, 169);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
+   /* @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == 169 && resultCode == RESULT_OK){
+
+            photoBitmapDenuncia = BitmapFactory.decodeFile(currentPhotoPath);
+            imgFotoDenuncia.setImageBitmap(photoBitmapDenuncia);
+            hayImagenDenuncia = true;
+        }
+
+    }*/
 
     // SEGUN CUANDO AUTORICE EL PERMISO, ABRIRA CAMARA O GALERIA
     @Override
@@ -702,6 +737,7 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
             loadingDialog.setCancelable(false);
             loadingDialog.show();
 
+
             byte[] bytes = null;
 
             try {
@@ -709,6 +745,7 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
 
             String iduser = tokenManager.getToken().getId();
             String nota = edtNotaDenuncia.getText().toString();

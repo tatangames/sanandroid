@@ -36,7 +36,7 @@ public class ImageUtils {
 
         // Comprimir el Bitmap en un ByteArrayOutputStream
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, buffer); // 80 es la calidad de compresión (de 0 a 100)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, buffer);
 
         // Convertir el ByteArrayOutputStream en un arreglo de bytes y devolverlo
         return buffer.toByteArray();
