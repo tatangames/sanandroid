@@ -99,7 +99,6 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
 
     // PERMISOS PARA CAMARA Y GALERIA
 
-    private static final int PICK_IMAGE_REQUEST = 1;
     private static final int CAMERA_PERMISSION_CODE = 101;
     private static final int GALERIA_PERMISSION_CODE = 102;
 
