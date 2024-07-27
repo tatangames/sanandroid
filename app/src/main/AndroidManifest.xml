@@ -37,8 +37,10 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".activity.solicitudes.SolicitudesActivity"
-            android:exported="false" />
+            android:name=".activity.servicios.catastro.CatastroActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+
         <activity
             android:name=".activity.servicios.talaarbol.TalaArbolActivity"
             android:exported="false"
@@ -65,16 +67,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <provider
-            android:authorities="com.alcaldiasan.santaananorteapp.fileprovider"
             android:name="androidx.core.content.FileProvider"
+            android:authorities="com.alcaldiasan.santaananorteapp.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-
-            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
-
         </provider>
 
         <receiver

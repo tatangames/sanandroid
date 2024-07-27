@@ -50,19 +50,13 @@ public class ModeloSolicitud {
     @SerializedName("escritura")
     public int escritura;
 
+    @SerializedName("dui")
+    public String dui;
 
-    private int tipoA;
-    private String nombreTipoA;
-    private String estadoA;
-    private String NotaA;
 
-    public ModeloSolicitud(int tipo, String nombreTipo, String estado, String nota){
-        this.tipoA = tipo;
-        this.nombreTipoA = nombreTipo;
-        this.estadoA = estado;
-        this.NotaA = nota;
+    public String getDui() {
+        return dui;
     }
-
 
     public String getNombretipo() {
         return nombretipo;

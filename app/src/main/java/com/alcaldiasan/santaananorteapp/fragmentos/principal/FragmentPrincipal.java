@@ -31,6 +31,7 @@ import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.activity.login.LoginActivity;
 import com.alcaldiasan.santaananorteapp.activity.principal.PrincipalActivity;
 import com.alcaldiasan.santaananorteapp.activity.servicios.basico.ServicioBasicoActivity;
+import com.alcaldiasan.santaananorteapp.activity.servicios.catastro.CatastroActivity;
 import com.alcaldiasan.santaananorteapp.activity.servicios.talaarbol.TalaArbolActivity;
 import com.alcaldiasan.santaananorteapp.adaptadores.principal.AdaptadorPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
@@ -70,10 +71,12 @@ public class FragmentPrincipal extends Fragment {
     // FORMA PARA MOSTRAR AL USUARIO SI HAY UN NUEVO TIPO SERVICIO Y QUE ACTUALICE APLICACION
 
     // 1- SERVICIO BASICO (bacheo, alumbrado, desechos solidos)
-    public static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1,2,3);
+    // 2- SERVICIO TALA DE ARBOL (solicitud y denuncias)
+    // 3- SERVICIO DENUNCIA (redireccionamiento whatsapp)
+    // 4- SERVICIO DE CATASTRO
+    public static final List<Integer> SUPPORTED_TYPES = Arrays.asList(1,2,3,4);
 
     private boolean boolCartelUpdateServicio = true;
-
 
 
 
@@ -260,7 +263,6 @@ public class FragmentPrincipal extends Fragment {
 
     public void servicioSeleccionado(int tipoServicio, int id, String titulo, String descripcion){
 
-
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(),
@@ -308,6 +310,15 @@ public class FragmentPrincipal extends Fragment {
                     // WhatsApp no está instalado
                     Toasty.info(getActivity(), getString(R.string.whatsapp_no_instalado)).show();
                 }
+            }
+            else if(tipoServicio == 4){
+
+                // CATASTRO
+
+                Intent intent = new Intent(getActivity(), CatastroActivity.class);
+                intent.putExtra("KEY_IDSERVICIO", id);
+                intent.putExtra("KEY_TITULO", titulo);
+                startActivity(intent);
             }
 
         }else{

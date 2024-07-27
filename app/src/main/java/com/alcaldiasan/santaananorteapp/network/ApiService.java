@@ -69,6 +69,16 @@ public interface ApiService {
     Observable<ModeloSolicitudContenedor> ocultarSolicitudes(@Field("id") int id, @Field("tipo") int tipo);
 
 
+    // ENVIAR SOLICITUD DE CATASTRO
+    @POST("app/solicitud/catastro")
+    @FormUrlEncoded
+    Observable<ModeloSolicitud> registrarSolicitudCatastro(@Field("id") String id,
+                                                           @Field("latitud") String latitud,
+                                                           @Field("longitud") String longitud,
+                                                           @Field("tiposoli") int tipoSolicitud,
+                                                           @Field("nombre") String nombre,
+                                                           @Field("dui") String dui
+                                                           );
 
 
 

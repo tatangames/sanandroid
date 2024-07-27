@@ -71,6 +71,10 @@
     <string name="solicitudes">Solicitudes</string>
     <string name="borrar_solicitud">Borrar Solicitud</string>
     <string name="ocultar_solicitud">Ocultar Solicitud</string>
+    <string name="dui">DUI</string>
+    <string name="solvencia_de_inmueble">Solvencia de Inmueble</string>
+    <string name="solvencia_de_empresa">Solvencia de Empresa</string>
+    <string name="dui_es_requerido">DUI es requerido</string>
 
 
 

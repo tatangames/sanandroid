@@ -626,11 +626,6 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
     }
 
 
-
-
-
-
-
     // ENVIAR DATOS AL SERVIDOR
     private void apiEnviarDatosSolicitud() {
 

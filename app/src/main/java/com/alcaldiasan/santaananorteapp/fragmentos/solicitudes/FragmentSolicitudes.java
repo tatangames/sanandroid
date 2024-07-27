@@ -2,7 +2,6 @@ package com.alcaldiasan.santaananorteapp.fragmentos.solicitudes;
 
 import static android.content.Context.MODE_PRIVATE;
 
-import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -11,22 +10,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alcaldiasan.santaananorteapp.R;
 import com.alcaldiasan.santaananorteapp.activity.principal.PrincipalActivity;
 import com.alcaldiasan.santaananorteapp.adaptadores.servicio.AdaptadorSolicitudes;
+import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloSolicitud;
+import com.alcaldiasan.santaananorteapp.modelos.solicitudes.ModeloVistaSolicitudes;
 import com.alcaldiasan.santaananorteapp.network.ApiService;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
 import com.alcaldiasan.santaananorteapp.network.TokenManager;
 import com.developer.kalert.KAlertDialog;
+
+import java.util.ArrayList;
 
 import es.dmoral.toasty.Toasty;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -44,6 +45,10 @@ public class FragmentSolicitudes extends Fragment {
     private ProgressBar progressBar;
     private RecyclerView recyclerView;
     private AdaptadorSolicitudes adaptadorSolicitudes;
+
+    private ArrayList<ModeloVistaSolicitudes> elementos = new ArrayList<ModeloVistaSolicitudes>();;
+
+
 
 
     @Override
@@ -89,13 +94,28 @@ public class FragmentSolicitudes extends Fragment {
 
                                         if(apiRespuesta.getSuccess() == 1) {
 
-                                            adaptadorSolicitudes = new AdaptadorSolicitudes(getContext(), apiRespuesta.getModeloSolicitud(), this);
-                                            GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 1);
-                                            layoutManager.setOrientation(RecyclerView.VERTICAL);
-                                            recyclerView.setLayoutManager(layoutManager);
+                                            for(ModeloSolicitud mm : apiRespuesta.getModeloSolicitud()){
+
+                                                if(mm.getTipo() == 1){ // denuncias basicas
+                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_BASICO, apiRespuesta.getModeloSolicitud()));
+                                                }
+                                                else if(mm.getTipo() == 2){// solicitud tala de arbol
+                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_SOLI_TALARBOL, apiRespuesta.getModeloSolicitud()));
+                                                }
+                                                else if(mm.getTipo() == 3){// denuncia tala de arbol
+                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_DENUN_TALAARBOL, apiRespuesta.getModeloSolicitud()));
+                                                }
+                                                else if(mm.getTipo() == 4){// denuncia tala de arbol
+                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_CATASTRO, apiRespuesta.getModeloSolicitud()));
+                                                }
+                                            }
+
+
+                                            adaptadorSolicitudes = new AdaptadorSolicitudes(getContext(), elementos, this);
+                                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
                                             recyclerView.setAdapter(adaptadorSolicitudes);
 
-                                            recyclerView.setVisibility(View.VISIBLE);
+
                                         }else{
                                             mensajeSinConexion();
                                         }
