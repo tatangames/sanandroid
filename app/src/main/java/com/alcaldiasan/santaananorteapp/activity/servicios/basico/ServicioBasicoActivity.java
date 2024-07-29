@@ -37,10 +37,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.alcaldiasan.santaananorteapp.R;
-import com.alcaldiasan.santaananorteapp.activity.servicios.talaarbol.TalaArbolActivity;
 import com.alcaldiasan.santaananorteapp.extras.ImageUtils;
 import com.alcaldiasan.santaananorteapp.extras.MultipartUtil;
 import com.alcaldiasan.santaananorteapp.network.ApiService;
@@ -56,7 +54,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

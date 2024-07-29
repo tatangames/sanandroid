@@ -21,6 +21,8 @@ import com.alcaldiasan.santaananorteapp.activity.principal.PrincipalActivity;
 import com.alcaldiasan.santaananorteapp.adaptadores.servicio.AdaptadorSolicitudes;
 import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloSolicitud;
+import com.alcaldiasan.santaananorteapp.modelos.solicitudes.ModeloSolicitudBasico;
+import com.alcaldiasan.santaananorteapp.modelos.solicitudes.ModeloSolicitudTalaArbol;
 import com.alcaldiasan.santaananorteapp.modelos.solicitudes.ModeloVistaSolicitudes;
 import com.alcaldiasan.santaananorteapp.network.ApiService;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
@@ -47,8 +49,6 @@ public class FragmentSolicitudes extends Fragment {
     private AdaptadorSolicitudes adaptadorSolicitudes;
 
     private ArrayList<ModeloVistaSolicitudes> elementos = new ArrayList<ModeloVistaSolicitudes>();;
-
-
 
 
     @Override
@@ -97,17 +97,24 @@ public class FragmentSolicitudes extends Fragment {
                                             for(ModeloSolicitud mm : apiRespuesta.getModeloSolicitud()){
 
                                                 if(mm.getTipo() == 1){ // denuncias basicas
-                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_BASICO, apiRespuesta.getModeloSolicitud()));
+
+                                                    ModeloSolicitudBasico basico = new ModeloSolicitudBasico(mm.getId(), mm.getNombretipo(), mm.getEstado(), mm.getNota(), mm.getFecha());
+
+                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_BASICO, basico, null));
                                                 }
                                                 else if(mm.getTipo() == 2){// solicitud tala de arbol
-                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_SOLI_TALARBOL, apiRespuesta.getModeloSolicitud()));
+
+                                                    ModeloSolicitudTalaArbol mSoliTalaArbol = new ModeloSolicitudTalaArbol(mm.getId(), mm.getNombretipo(), mm.getEstado(), mm.getNota(), mm.getFecha(),
+                                                                                                                          mm.getNombre(), mm.getTelefono(), mm.getDireccion(), mm.getImagen());
+
+                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_SOLI_TALARBOL, null, mSoliTalaArbol));
                                                 }
                                                 else if(mm.getTipo() == 3){// denuncia tala de arbol
-                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_DENUN_TALAARBOL, apiRespuesta.getModeloSolicitud()));
+                                                    elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_DENUN_TALAARBOL, null, null));
                                                 }
-                                                else if(mm.getTipo() == 4){// denuncia tala de arbol
+                                                /*else if(mm.getTipo() == 4){// denuncia tala de arbol
                                                     elementos.add(new ModeloVistaSolicitudes(ModeloVistaSolicitudes.TIPO_CATASTRO, apiRespuesta.getModeloSolicitud()));
-                                                }
+                                                }*/
                                             }
 
 

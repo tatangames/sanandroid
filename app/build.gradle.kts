@@ -75,6 +75,7 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     implementation(libs.appcompat)
     implementation(libs.material)

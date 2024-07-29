@@ -17,14 +17,21 @@ public class ModeloVistaSolicitudes {
     public static final int TIPO_CATASTRO = 4;
 
 
+    private ModeloSolicitudBasico modeloSolicitudBasicos;
+    private ModeloSolicitudTalaArbol modeloSolicitudTalaArbol;
 
-    private List<ModeloSolicitud> modeloSolicitudes;
+    private ModeloDenunciaTalaArbol modeloDenunciaTalaArbol;
 
 
-    public ModeloVistaSolicitudes(int tipoVista, List<ModeloSolicitud> modeloSolicitudes
+
+
+
+    public ModeloVistaSolicitudes(int tipoVista, ModeloSolicitudBasico modeloSolicitudBasicos,
+                                  ModeloSolicitudTalaArbol modeloSolicitudTalaArbol
     ) {
         this.tipoVista = tipoVista;
-        this.modeloSolicitudes = modeloSolicitudes;
+        this.modeloSolicitudBasicos = modeloSolicitudBasicos;
+        this.modeloSolicitudTalaArbol = modeloSolicitudTalaArbol;
     }
 
 
@@ -32,7 +39,11 @@ public class ModeloVistaSolicitudes {
         return tipoVista;
     }
 
-    public List<ModeloSolicitud> getModeloSolicitudes() {
-        return modeloSolicitudes;
+    public ModeloSolicitudBasico getModeloSolicitudBasicos() {
+        return modeloSolicitudBasicos;
+    }
+
+    public ModeloSolicitudTalaArbol getModeloSolicitudTalaArbol() {
+        return modeloSolicitudTalaArbol;
     }
 }

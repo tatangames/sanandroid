@@ -1,28 +1,25 @@
 package com.alcaldiasan.santaananorteapp.modelos.servicio;
 
-import com.alcaldiasan.santaananorteapp.modelos.slider.ModeloSlider;
 import com.google.gson.annotations.SerializedName;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ModeloSolicitud {
 
+
     @SerializedName("success")
     public int success;
+
+    @SerializedName("id")
+    public int id;
+
+
+    @SerializedName("tipo")
+    public int tipo;
 
     @SerializedName("titulo")
     public String titulo;
 
     @SerializedName("mensaje")
     public String mensaje;
-
-
-    @SerializedName("id")
-    public int id;
-
-    @SerializedName("tipo")
-    public int tipo;
 
 
     @SerializedName("nombretipo")
@@ -53,21 +50,19 @@ public class ModeloSolicitud {
     @SerializedName("dui")
     public String dui;
 
+    @SerializedName("imagen")
+    public String imagen;
 
-    public String getDui() {
-        return dui;
-    }
-
-    public String getNombretipo() {
-        return nombretipo;
+    public String getImagen() {
+        return imagen;
     }
 
     public int getId() {
         return id;
     }
 
-    public int getTipo() {
-        return tipo;
+    public String getNombretipo() {
+        return nombretipo;
     }
 
     public String getEstado() {
@@ -98,8 +93,8 @@ public class ModeloSolicitud {
         return escritura;
     }
 
-    public int getSuccess() {
-        return success;
+    public String getDui() {
+        return dui;
     }
 
     public String getTitulo() {
@@ -108,5 +103,14 @@ public class ModeloSolicitud {
 
     public String getMensaje() {
         return mensaje;
+    }
+
+    public int getSuccess() {
+        return success;
+    }
+
+
+    public int getTipo() {
+        return tipo;
     }
 }

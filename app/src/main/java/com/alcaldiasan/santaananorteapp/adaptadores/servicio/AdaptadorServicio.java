@@ -5,7 +5,6 @@ import static com.alcaldiasan.santaananorteapp.fragmentos.principal.FragmentPrin
 import android.content.Context;
 import android.graphics.Color;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,27 +14,19 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.alcaldiasan.santaananorteapp.R;
-import com.alcaldiasan.santaananorteapp.adaptadores.slider.AdaptadorSlider;
 import com.alcaldiasan.santaananorteapp.extras.IOnRecyclerViewClickListener;
 import com.alcaldiasan.santaananorteapp.fragmentos.principal.FragmentPrincipal;
-import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloServicio;
-import com.alcaldiasan.santaananorteapp.modelos.slider.ModeloSlider;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-import com.smarteist.autoimageslider.IndicatorView.animation.type.IndicatorAnimationType;
-import com.smarteist.autoimageslider.SliderAnimations;
-import com.smarteist.autoimageslider.SliderView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AdaptadorServicio extends RecyclerView.Adapter<AdaptadorServicio.MyViewHolder> {
