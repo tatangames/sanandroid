@@ -75,7 +75,7 @@
     <string name="solvencia_de_inmueble">Solvencia de Inmueble</string>
     <string name="solvencia_de_empresa">Solvencia de Empresa</string>
     <string name="dui_es_requerido">DUI es requerido</string>
-
-
+    <string name="ocultado">Ocultado</string>
+    <string name="no_hay_solicitudes">No hay Solicitudes</string>
 
 </resources>

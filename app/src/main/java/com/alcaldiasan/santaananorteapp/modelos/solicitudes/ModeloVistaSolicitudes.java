@@ -16,22 +16,28 @@ public class ModeloVistaSolicitudes {
 
     public static final int TIPO_CATASTRO = 4;
 
+    public static final int TIPO_SIN_SOLICITUDES = 5;
+
 
     private ModeloSolicitudBasico modeloSolicitudBasicos;
     private ModeloSolicitudTalaArbol modeloSolicitudTalaArbol;
-
     private ModeloDenunciaTalaArbol modeloDenunciaTalaArbol;
 
+    private ModeloSolicitudCatastro modeloSolicitudCatastro;
 
 
 
 
     public ModeloVistaSolicitudes(int tipoVista, ModeloSolicitudBasico modeloSolicitudBasicos,
-                                  ModeloSolicitudTalaArbol modeloSolicitudTalaArbol
+                                  ModeloSolicitudTalaArbol modeloSolicitudTalaArbol,
+                                  ModeloDenunciaTalaArbol modeloDenunciaTalaArbol,
+                                  ModeloSolicitudCatastro modeloSolicitudCatastro
     ) {
         this.tipoVista = tipoVista;
         this.modeloSolicitudBasicos = modeloSolicitudBasicos;
         this.modeloSolicitudTalaArbol = modeloSolicitudTalaArbol;
+        this.modeloDenunciaTalaArbol = modeloDenunciaTalaArbol;
+        this.modeloSolicitudCatastro = modeloSolicitudCatastro;
     }
 
 
@@ -45,5 +51,13 @@ public class ModeloVistaSolicitudes {
 
     public ModeloSolicitudTalaArbol getModeloSolicitudTalaArbol() {
         return modeloSolicitudTalaArbol;
+    }
+
+    public ModeloDenunciaTalaArbol getModeloDenunciaTalaArbol() {
+        return modeloDenunciaTalaArbol;
+    }
+
+    public ModeloSolicitudCatastro getModeloSolicitudCatastro() {
+        return modeloSolicitudCatastro;
     }
 }

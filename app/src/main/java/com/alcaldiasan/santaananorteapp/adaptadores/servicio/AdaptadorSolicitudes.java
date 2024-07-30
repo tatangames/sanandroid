@@ -24,7 +24,9 @@ import com.alcaldiasan.santaananorteapp.modelos.principal.ModeloVistaPrincipal;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloServicio;
 import com.alcaldiasan.santaananorteapp.modelos.servicio.ModeloSolicitud;
 import com.alcaldiasan.santaananorteapp.modelos.slider.ModeloSlider;
+import com.alcaldiasan.santaananorteapp.modelos.solicitudes.ModeloDenunciaTalaArbol;
 import com.alcaldiasan.santaananorteapp.modelos.solicitudes.ModeloSolicitudBasico;
+import com.alcaldiasan.santaananorteapp.modelos.solicitudes.ModeloSolicitudCatastro;
 import com.alcaldiasan.santaananorteapp.modelos.solicitudes.ModeloSolicitudTalaArbol;
 import com.alcaldiasan.santaananorteapp.modelos.solicitudes.ModeloVistaSolicitudes;
 import com.alcaldiasan.santaananorteapp.network.RetrofitBuilder;
@@ -71,13 +73,15 @@ public class AdaptadorSolicitudes extends RecyclerView.Adapter<RecyclerView.View
             case ModeloVistaSolicitudes.TIPO_SOLI_TALARBOL:
                 itemView = inflater.inflate(R.layout.cardview_solicitud_talarbol, parent, false);
                 return new AdaptadorSolicitudes.SolicitudTalaArbolViewHolder(itemView);
-            /*case ModeloVistaSolicitudes.TIPO_DENUN_TALAARBOL:
+            case ModeloVistaSolicitudes.TIPO_DENUN_TALAARBOL:
                 itemView = inflater.inflate(R.layout.cardview_denuncia_talaarbol, parent, false);
                 return new AdaptadorSolicitudes.SolicitudDenunciaTalaArbolViewHolder(itemView);
             case ModeloVistaSolicitudes.TIPO_CATASTRO:
                 itemView = inflater.inflate(R.layout.cardview_solicitud_catastro, parent, false);
-                return new AdaptadorSolicitudes.SolicitudCatastroViewHolder(itemView);*/
-
+                return new AdaptadorSolicitudes.SolicitudCatastroViewHolder(itemView);
+            case ModeloVistaSolicitudes.TIPO_SIN_SOLICITUDES:
+                itemView = inflater.inflate(R.layout.cardview_sin_solicitudes, parent, false);
+                return new AdaptadorSolicitudes.SinSolicitudes(itemView);
 
             default:
                 throw new IllegalArgumentException("Tipo de vista desconocido");
@@ -93,21 +97,25 @@ public class AdaptadorSolicitudes extends RecyclerView.Adapter<RecyclerView.View
 
                 ModeloSolicitudBasico mBasico = mVista.getModeloSolicitudBasicos();
 
-                AdaptadorSolicitudes.SolicitudBasicoViewHolder viewHolderBasico = (AdaptadorSolicitudes.SolicitudBasicoViewHolder) holder;
+                SolicitudBasicoViewHolder viewHolderBasico = (SolicitudBasicoViewHolder) holder;
 
-                viewHolderBasico.txtTipo.setText(mBasico.getTipoNombre());
+                viewHolderBasico.txtTipo.setText(mBasico.getNombreTipo());
                 viewHolderBasico.txtFecha.setText(mBasico.getFecha());
                 viewHolderBasico.txtEstado.setText(mBasico.getEstado());
                 viewHolderBasico.txtNota.setText(mBasico.getNota());
+
+                viewHolderBasico.setListener((view, position1) -> {
+                    fragmentSolicitudes.modalBorrar(mBasico.getId(), mBasico.getTipo());
+                });
 
                 break;
 
             case ModeloVistaSolicitudes.TIPO_SOLI_TALARBOL:
 
                 ModeloSolicitudTalaArbol mSoliTala = mVista.getModeloSolicitudTalaArbol();
-                AdaptadorSolicitudes.SolicitudTalaArbolViewHolder holderSoliTalaArbol = (AdaptadorSolicitudes.SolicitudTalaArbolViewHolder) holder;
+                SolicitudTalaArbolViewHolder holderSoliTalaArbol = (SolicitudTalaArbolViewHolder) holder;
 
-                holderSoliTalaArbol.txtTipo.setText(mSoliTala.getTipoNombre());
+                holderSoliTalaArbol.txtTipo.setText(mSoliTala.getNombreTipo());
                 holderSoliTalaArbol.txtFecha.setText(mSoliTala.getFecha());
                 holderSoliTalaArbol.txtEstado.setText(mSoliTala.getEstado());
                 holderSoliTalaArbol.txtNombre.setText(mSoliTala.getNombre());
@@ -127,6 +135,46 @@ public class AdaptadorSolicitudes extends RecyclerView.Adapter<RecyclerView.View
                             .apply(opcionesGlide)
                             .into(holderSoliTalaArbol.imgArbol);
                 }
+
+                holderSoliTalaArbol.setListener((view, position1) -> {
+                    fragmentSolicitudes.modalBorrar(mSoliTala.getId(), mSoliTala.getTipo());
+                });
+
+                break;
+
+            case ModeloVistaSolicitudes.TIPO_DENUN_TALAARBOL:
+
+                ModeloDenunciaTalaArbol mDenuncia = mVista.getModeloDenunciaTalaArbol();
+
+                SolicitudDenunciaTalaArbolViewHolder viewHolderDenuncia = (SolicitudDenunciaTalaArbolViewHolder) holder;
+
+                viewHolderDenuncia.txtTipo.setText(mDenuncia.getNombreTipo());
+                viewHolderDenuncia.txtFecha.setText(mDenuncia.getFecha());
+                viewHolderDenuncia.txtEstado.setText(mDenuncia.getEstado());
+                viewHolderDenuncia.txtNota.setText(mDenuncia.getNota());
+
+                viewHolderDenuncia.setListener((view, position1) -> {
+                    fragmentSolicitudes.modalBorrar(mDenuncia.getId(), mDenuncia.getTipo());
+                });
+
+                break;
+
+            case ModeloVistaSolicitudes.TIPO_CATASTRO:
+
+                ModeloSolicitudCatastro mCatastro = mVista.getModeloSolicitudCatastro();
+
+                SolicitudCatastroViewHolder viewHolderCatastro = (SolicitudCatastroViewHolder) holder;
+
+                viewHolderCatastro.txtTipo.setText(mCatastro.getNombreTipo());
+                viewHolderCatastro.txtFecha.setText(mCatastro.getFecha());
+                viewHolderCatastro.txtEstado.setText(mCatastro.getEstado());
+                viewHolderCatastro.txtSolvencia.setText(mCatastro.getNombreTipo());
+                viewHolderCatastro.txtNombre.setText(mCatastro.getNombre());
+                viewHolderCatastro.txtDui.setText(mCatastro.getDui());
+
+                viewHolderCatastro.setListener((view, position1) -> {
+                    fragmentSolicitudes.modalBorrar(mCatastro.getId(), mCatastro.getTipo());
+                });
 
                 break;
         }
@@ -148,15 +196,20 @@ public class AdaptadorSolicitudes extends RecyclerView.Adapter<RecyclerView.View
 
 
 
-
-
     // SOLICITUD BASICA
-    private static class SolicitudBasicoViewHolder extends RecyclerView.ViewHolder {
+    private static class SolicitudBasicoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         private TextView txtTipo;
         private TextView txtFecha;
         private TextView txtEstado;
         private TextView txtNota;
+
+        private IOnRecyclerViewClickListener listener;
+
+        public void setListener(IOnRecyclerViewClickListener listener) {
+            this.listener = listener;
+            itemView.setOnClickListener(this);
+        }
 
         SolicitudBasicoViewHolder(View itemView) {
             super(itemView);
@@ -164,15 +217,26 @@ public class AdaptadorSolicitudes extends RecyclerView.Adapter<RecyclerView.View
             txtFecha = itemView.findViewById(R.id.txtFecha);
             txtEstado = itemView.findViewById(R.id.txtEstado);
             txtNota = itemView.findViewById(R.id.txtNota);
+        }
 
+        @Override
+        public void onClick(View v) {
+            listener.onClick(v, getAdapterPosition());
         }
     }
 
 
-    private static class SolicitudTalaArbolViewHolder extends RecyclerView.ViewHolder {
+    private static class SolicitudTalaArbolViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         private TextView txtTipo, txtFecha, txtEstado, txtNombre, txtTelefono, txtDireccion, txtNota;
         private ImageView imgArbol;
+
+        private IOnRecyclerViewClickListener listener;
+
+        public void setListener(IOnRecyclerViewClickListener listener) {
+            this.listener = listener;
+            itemView.setOnClickListener(this);
+        }
 
         SolicitudTalaArbolViewHolder(View itemView) {
             super(itemView);
@@ -185,7 +249,79 @@ public class AdaptadorSolicitudes extends RecyclerView.Adapter<RecyclerView.View
             txtNota = itemView.findViewById(R.id.txtNota);
             imgArbol = itemView.findViewById(R.id.imgArbol);
         }
+
+        @Override
+        public void onClick(View v) {
+            listener.onClick(v, getAdapterPosition());
+        }
     }
+
+
+
+    private static class SolicitudDenunciaTalaArbolViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+
+        private TextView txtTipo, txtFecha, txtEstado, txtNota;
+
+        private IOnRecyclerViewClickListener listener;
+
+        public void setListener(IOnRecyclerViewClickListener listener) {
+            this.listener = listener;
+            itemView.setOnClickListener(this);
+        }
+
+        SolicitudDenunciaTalaArbolViewHolder(View itemView) {
+            super(itemView);
+            txtTipo = itemView.findViewById(R.id.txtTipo);
+            txtFecha = itemView.findViewById(R.id.txtFecha);
+            txtEstado = itemView.findViewById(R.id.txtEstado);
+            txtNota = itemView.findViewById(R.id.txtNota);
+        }
+
+        @Override
+        public void onClick(View v) {
+            listener.onClick(v, getAdapterPosition());
+        }
+    }
+
+
+    private static class SolicitudCatastroViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+
+        private TextView txtTipo, txtFecha, txtEstado, txtSolvencia, txtNombre, txtDui;
+
+        private IOnRecyclerViewClickListener listener;
+
+        public void setListener(IOnRecyclerViewClickListener listener) {
+            this.listener = listener;
+            itemView.setOnClickListener(this);
+        }
+
+        SolicitudCatastroViewHolder(View itemView) {
+            super(itemView);
+            txtTipo = itemView.findViewById(R.id.txtTipo);
+            txtFecha = itemView.findViewById(R.id.txtFecha);
+            txtEstado = itemView.findViewById(R.id.txtEstado);
+            txtSolvencia = itemView.findViewById(R.id.txtSolvencia);
+            txtNombre = itemView.findViewById(R.id.txtNombre);
+            txtDui = itemView.findViewById(R.id.txtDui);
+        }
+
+        @Override
+        public void onClick(View v) {
+            listener.onClick(v, getAdapterPosition());
+        }
+    }
+
+
+    private static class SinSolicitudes extends RecyclerView.ViewHolder{
+
+        SinSolicitudes(View itemView) {
+            super(itemView);
+        }
+    }
+
+
+
+
 
 
 

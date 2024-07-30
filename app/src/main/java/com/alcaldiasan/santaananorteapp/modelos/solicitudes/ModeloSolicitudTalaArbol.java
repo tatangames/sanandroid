@@ -6,19 +6,20 @@ public class ModeloSolicitudTalaArbol {
 
     private int id;
     private String estado;
-    private String tipoNombre;
+    private String nombreTipo;
     private String nota;
     private String fecha;
     private String nombre;
     private String telefono;
     private String direccion;
     private String imagen;
+    private int tipo;
 
 
-    public ModeloSolicitudTalaArbol(int id, String tipoNombre, String estado, String nota, String fecha,
-                                    String nombre, String telefono, String direccion, String imagen) {
+    public ModeloSolicitudTalaArbol(int id, String nombreTipo, String estado, String nota, String fecha,
+                                    String nombre, String telefono, String direccion, String imagen, int tipo) {
         this.id = id;
-        this.tipoNombre = tipoNombre;
+        this.nombreTipo = nombreTipo;
         this.estado = estado;
         this.nota = nota;
         this.fecha = fecha;
@@ -26,6 +27,11 @@ public class ModeloSolicitudTalaArbol {
         this.telefono = telefono;
         this.direccion = direccion;
         this.imagen = imagen;
+        this.tipo = tipo;
+    }
+
+    public int getTipo() {
+        return tipo;
     }
 
     public String getImagen() {
@@ -40,8 +46,8 @@ public class ModeloSolicitudTalaArbol {
         return estado;
     }
 
-    public String getTipoNombre() {
-        return tipoNombre;
+    public String getNombreTipo() {
+        return nombreTipo;
     }
 
     public String getNota() {

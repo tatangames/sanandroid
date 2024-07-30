@@ -6,10 +6,13 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.PorterDuff;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +35,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -107,7 +111,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
     private boolean is_storage_image_permitted = false;
 
-    private boolean allPermissionResultCheck(){
+    private boolean allPermissionResultCheck() {
         return is_storage_image_permitted;
     }
 
@@ -156,7 +160,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             String textoServicio = bundle.getString("KEY_NOTA");
 
             // DESCRIPCION DE ESTA PANTALLA
-            if(!TextUtils.isEmpty(textoServicio)){
+            if (!TextUtils.isEmpty(textoServicio)) {
                 tituloServicio.setText(textoServicio);
             }
         }
@@ -201,7 +205,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                         LOCATION_PERMISSION_REQUEST_CODE);
             } else {
 
-                if(!hayImagen){
+                if (!hayImagen) {
                     Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
                     return;
                 }
@@ -210,7 +214,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             }
         });
 
-        cameraLauncher = registerForActivityResult(
+        /*cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
@@ -219,11 +223,16 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                         imgFoto.setImageBitmap(bitmapFoto);
                     }
                 }
-        );
+        );*/
     }
 
 
-    private void abrirBottomDialog(){
+    private static final int REQUEST_CODE_OPEN_GALLERY = 1;
+    private static final int PERMISSION_REQUEST_READ_MEDIA_IMAGES = 2;
+    private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 3;
+
+
+    private void abrirBottomDialog() {
         if (!bottomSheetImagen) {
             bottomSheetImagen = true;
 
@@ -242,8 +251,8 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
 
             btnGaleria.setOnClickListener(v -> {
-                bottomSheetProgreso.dismiss();
                 verificarPermisoGaleria();
+                bottomSheetProgreso.dismiss();
             });
 
             // Configura un oyente para saber cuándo se cierra el BottomSheetDialog
@@ -254,7 +263,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             bottomSheetProgreso.show();
         }
     }
-
 
 
     @AfterPermissionGranted(CAMERA_PERMISSION_CODE)
@@ -295,13 +303,11 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     }
 
 
-
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
         if (requestCode == CAMERA_PERMISSION_CODE) {
             openCamera();
-        }
-        else if (requestCode == GALERIA_PERMISSION_CODE) {
+        } else if (requestCode == GALERIA_PERMISSION_CODE) {
             abrirGaleria();
         }
     }
@@ -309,7 +315,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
-        if (requestCode == CAMERA_PERMISSION_CODE ) {
+        if (requestCode == CAMERA_PERMISSION_CODE) {
             if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
                 new AlertDialog.Builder(this)
                         .setTitle(getString(R.string.permiso_requerido))
@@ -321,8 +327,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             } else {
                 Toast.makeText(this, getString(R.string.permiso_denegado), Toast.LENGTH_SHORT).show();
             }
-        }
-        else if (requestCode == GALERIA_PERMISSION_CODE ) {
+        } else if (requestCode == GALERIA_PERMISSION_CODE) {
             if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
                 new AlertDialog.Builder(this)
                         .setTitle(getString(R.string.permiso_requerido))
@@ -338,9 +343,31 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     }
 
 
+    private void verificarPermisoGaleria() {
 
-    private void verificarPermisoGaleria(){
-        if (sdkVersion >= Build.VERSION_CODES.TIRAMISU) {
+        // Verificar y solicitar permisos según la versión de Android
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_MEDIA_IMAGES},
+                        PERMISSION_REQUEST_READ_MEDIA_IMAGES);
+            } else {
+                openGallery();
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+            } else {
+                openGallery();
+            }
+        }
+
+
+        /*if (sdkVersion >= Build.VERSION_CODES.TIRAMISU) {
             // El dispositivo ejecuta Android 13 o superior.
 
             if(!allPermissionResultCheck()){
@@ -375,13 +402,112 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                         GALERIA_PERMISSION_CODE,
                         perms);
             }
+        }*/
+
+
+    }
+
+
+
+    private static final int REQUEST_CODE_PERMISSIONS = 1001;
+   // private static final int PICK_IMAGE = 1;
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_READ_MEDIA_IMAGES) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGallery();
+            } else {
+                // Permiso denegado, manejar la situación
+            }
+        } else if (requestCode == PERMISSION_REQUEST_READ_EXTERNAL_STORAGE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGallery();
+            } else {
+                // Permiso denegado, manejar la situación
+            }
+        }
+    }
+
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent, REQUEST_CODE_OPEN_GALLERY);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_OPEN_GALLERY && resultCode == RESULT_OK && data != null) {
+            Uri selectedImage = data.getData();
+            // Manejar la imagen seleccionada
+
+
+                try {
+
+                    InputStream imageStream = getContentResolver().openInputStream(selectedImage);
+                    bitmapFoto = BitmapFactory.decodeStream(imageStream);
+                    bitmapFoto = rotateImageIfRequired(this, bitmapFoto, selectedImage);
+
+                    hayImagen = true;
+
+                    Glide.with(this)
+                            .load(bitmapFoto)
+                            .apply(opcionesGlide)
+                            .into(imgFoto);
+
+
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+
+
+
+
+
+
         }
     }
 
 
+
+    private void checkPermissionsAndOpenGallery() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
+        } else {
+            abrirGaleria();
+        }
+    }
+
+   /* @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                abrirGaleria();
+            } else {
+                // El permiso fue denegado. Muestra un mensaje al usuario.
+                Toast.makeText(this, "Permiso denegado para leer el almacenamiento", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }*/
+
+
+
+
+
+
     // YA CON PERMISO ABRIRA GALERIA
-    private void abrirGaleria(){
+    private void abrirGaleria() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
         launcherGaleria.launch(intent);
     }
 
@@ -395,8 +521,11 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                         Uri imageUri = data.getData();
                         try {
 
+                            // se enviar al servidor
                             InputStream imageStream = getContentResolver().openInputStream(imageUri);
                             bitmapFoto = BitmapFactory.decodeStream(imageStream);
+                            bitmapFoto = rotateImageIfRequired(this, bitmapFoto, imageUri);
+
                             hayImagen = true;
 
                             Glide.with(this)
@@ -410,6 +539,21 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                 }
             }
     );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -437,6 +581,120 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     // ******** END - PERMISOS (ABRIR GALERIA) ANDROID 13 O SUPERIOR *********
 
 
+   /*@Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLastLocation();
+            } else {
+                alertDialogoPermiso();
+            }
+        }
+    }*/
+
+
+    // DIALOGO CUANDO NO ACEPTER PERMISOS DE UBICACION
+    private void alertDialogoPermisoUbicacion(){
+        new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.permiso_requerido))
+                .setMessage(getString(R.string.permiso_lozalizacion_ajustes))
+                .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
+                .setNegativeButton(getString(R.string.cancelar), null)
+                .create()
+                .show();
+    }
+
+
+    // ABRIR AJUSTES
+    private void openAppSettings() {
+        Intent intent = new Intent();
+        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", getPackageName(), null);
+        intent.setData(uri);
+        startActivity(intent);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // ROTAR IMAGEN SI ES NECESARIO
+    private Bitmap rotateImageIfRequired(Context context, Bitmap img, Uri selectedImage) throws IOException {
+        ExifInterface ei;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            InputStream input = context.getContentResolver().openInputStream(selectedImage);
+            ei = new ExifInterface(input);
+        } else {
+            String path = getPathFromUri(context, selectedImage);
+            ei = new ExifInterface(path);
+        }
+
+        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return rotateImage(img, 90);
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return rotateImage(img, 180);
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return rotateImage(img, 270);
+            default:
+                return img;
+        }
+    }
+
+    // PARA ROTAR IMAGEN
+    private Bitmap rotateImage(Bitmap img, int degree) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degree);
+        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
+        img.recycle();
+        return rotatedImg;
+    }
+
+
+    // URI DE IMAGEN
+    private String getPathFromUri(Context context, Uri uri) {
+        Cursor cursor = null;
+        try {
+            String[] proj = { MediaStore.Images.Media.DATA };
+            cursor = context.getContentResolver().query(uri, proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+
 
 
     @SuppressLint("MissingPermission")
@@ -462,6 +720,8 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                 }
             });
     }
+
+
 
 
 
@@ -566,7 +826,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         pDialog.show();
     }
 
-
     private void resetear(){
         hayImagen = false;
         edtNota.setText("");
@@ -595,41 +854,9 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     }
 
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation();
-            } else {
-                alertDialogoPermiso();
-            }
-        }
-    }
 
 
-    private void alertDialogoPermiso(){
-        new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.permiso_requerido))
-                .setMessage(getString(R.string.permiso_lozalizacion_ajustes))
-                .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
-                .setNegativeButton(getString(R.string.cancelar), null)
-                .create()
-                .show();
-    }
-
-
-    private void openAppSettings() {
-        Intent intent = new Intent();
-        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", getPackageName(), null);
-        intent.setData(uri);
-        startActivity(intent);
-    }
-
-
+    // CERRAR TECLADO
     private void closeKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         View view = getCurrentFocus();

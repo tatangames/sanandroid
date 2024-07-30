@@ -53,6 +53,10 @@ public class ModeloSolicitud {
     @SerializedName("imagen")
     public String imagen;
 
+
+
+
+
     public String getImagen() {
         return imagen;
     }

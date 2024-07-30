@@ -6,19 +6,25 @@ public class ModeloSolicitudBasico {
 
     private int id;
     private String estado;
-    private String tipoNombre;
+    private String nombreTipo;
     private String nota;
     private String fecha;
 
+    private int tipo;
 
-    public ModeloSolicitudBasico(int id, String tipoNombre, String estado, String nota, String fecha) {
+
+    public ModeloSolicitudBasico(int id, String nombreTipo, String estado, String nota, String fecha, int tipo) {
         this.id = id;
-        this.tipoNombre = tipoNombre;
+        this.nombreTipo = nombreTipo;
         this.estado = estado;
         this.nota = nota;
         this.fecha = fecha;
+        this.tipo = tipo;
     }
 
+    public int getTipo() {
+        return tipo;
+    }
 
     public int getId() {
         return id;
@@ -28,8 +34,8 @@ public class ModeloSolicitudBasico {
         return estado;
     }
 
-    public String getTipoNombre() {
-        return tipoNombre;
+    public String getNombreTipo() {
+        return nombreTipo;
     }
 
     public String getNota() {

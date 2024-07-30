@@ -6,7 +6,6 @@ public class ModeloServicio {
 
     @SerializedName("id")
     public int id;
-
     @SerializedName("tiposervicio")
     public int tiposervicio;
 

@@ -15,6 +15,12 @@ public class ModeloSolicitudContenedor {
     public List<ModeloSolicitud> modeloSolicitud;
 
 
+    @SerializedName("haydatos")
+    public int haydatos;
+
+    public int getHaydatos() {
+        return haydatos;
+    }
 
     public int getSuccess() {
         return success;
