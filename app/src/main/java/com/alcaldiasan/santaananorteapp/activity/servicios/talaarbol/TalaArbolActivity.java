@@ -2,11 +2,18 @@ package com.alcaldiasan.santaananorteapp.activity.servicios.talaarbol;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.PorterDuff;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,11 +27,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -53,31 +60,22 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-
-import okhttp3.MultipartBody;
 
 import es.dmoral.toasty.Toasty;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
+import okhttp3.MultipartBody;
 
-public class TalaArbolActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
 
+public class TalaArbolActivity extends AppCompatActivity {
 
     // PANTALLA SOLICITUD TALA DE ARBOL Y PARA DENUNCIA
 
     private Bitmap photoBitmapDenuncia;
     private Bitmap photoBitmapSolicitud;
-
-    // PERMISO DE LOCALIZACION
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private FusedLocationProviderClient fusedLocationClient;
 
 
     private RequestOptions opcionesGlide = new RequestOptions()
@@ -87,48 +85,22 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
             .priority(Priority.NORMAL);
 
 
-
     private TextView txtToolbar, tituloServicio;
     private ImageView imgFlechaAtras, imgFotoSolicitud, imgFotoDenuncia;
     private TextInputEditText edtNotaSolicitud, edtNotaDenuncia, edtNombre, edtTelefono, edtDireccion;;
 
-    private boolean bottomSheetImagen = false;
-
-    private boolean hayImagenSolicitud = false, hayImagenDenuncia = false;
-
-
-    // PERMISOS PARA CAMARA Y GALERIA
-
-    private static final int CAMERA_PERMISSION_CODE = 101;
-    private static final int GALERIA_PERMISSION_CODE = 102;
-
-    private final int sdkVersion = Build.VERSION.SDK_INT;
-
-    private ActivityResultLauncher<Intent> cameraLauncher;
-
-
-    // ******** PERMISOS (ABRIR GALERIA) ANDROID 13 O SUPERIOR *********
-
-    private final String[] requiredPermission = new String[]{
-            Manifest.permission.READ_MEDIA_IMAGES,
-    };
-
-    private boolean is_storage_image_permitted = false;
-
-    private boolean allPermissionResultCheck(){
-        return is_storage_image_permitted;
-    }
+    private boolean hayImagenSolicitud = false, hayImagenDenuncia = false,
+            bottomSheetImagen = false;
 
     private KAlertDialog loadingDialog;
-
-
-
 
     // COORDENADAS GPS
     private double latitudGPS = 0;
     private double longitudGPS = 0;
 
-    private boolean boolSeguroEnviarDatosSolicitud = true, boolSeguroEnviarDatosDenuncia = true;
+    private boolean boolSeguroEnviarDatosSolicitud = true,
+            boolSeguroEnviarDatosDenuncia = true,
+            estadoSolicitud = true;
 
     private ApiService service;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -143,10 +115,23 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
 
     private CheckBox checkEscritura;
 
-    private boolean estadoSolicitud = true;
 
+    // PARA PERMISO DE LOCALIZACION
+    private FusedLocationProviderClient fusedLocationClient;
+
+    // PATH DE FOTO TEMPORAL AL TOMAR FOTOGRAFIA CON CAMARA
     private String currentPhotoPath;
+    // INTENT PARA LA CAMARA
+    private ActivityResultLauncher<Intent> cameraLauncher;
 
+
+    // NUMERO DE PERMISOS PARA CADA UNA DE LAS FUNCIONES
+    private static final int REQUEST_CODE_OPEN_GALLERY = 1;
+    private static final int PERMISSION_REQUEST_READ_MEDIA_IMAGES = 2;
+    private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 3;
+    private static final int PERMISSION_REQUEST_CAMERA = 5;
+
+    private ActivityResultLauncher<String> requestPermissionLauncher;
 
 
     @Override
@@ -170,6 +155,9 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
         checkEscritura = findViewById(R.id.checkEscritura);
         imgFotoDenuncia = findViewById(R.id.imgFotoDenuncia);
         edtNotaDenuncia = findViewById(R.id.edtNotaDenuncia);
+
+        // OBTENER LOCALIZACION
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
 
         radioSolicitud.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -226,14 +214,12 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
             finish();
         });
 
-        // LOCALIZACION
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-
+        // ABRIR DIALOGO EN MODO SOLICITUD TALA ARBOL
         imgFotoSolicitud.setOnClickListener(v -> {
             abrirBottomDialog();
         });
 
+        // ABRIR DIALOGO EN MODO DENUNCIA TALA ARBOL
         imgFotoDenuncia.setOnClickListener(v -> {
             abrirBottomDialog();
         });
@@ -246,41 +232,27 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
 
             closeKeyboard();
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        LOCATION_PERMISSION_REQUEST_CODE);
-            } else {
-
-
-                if(TextUtils.isEmpty(edtNombre.getText().toString())){
-                    Toasty.info(this, R.string.nombre_es_requerido, Toasty.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if(TextUtils.isEmpty(edtTelefono.getText().toString())){
-                    Toasty.info(this, R.string.telefono_es_requerido, Toasty.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if(TextUtils.isEmpty(edtDireccion.getText().toString())){
-                    Toasty.info(this, R.string.direccion_es_requerido, Toasty.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if(!hayImagenSolicitud){
-                    Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
-                    return;
-                }
-
-                obtenerLocalizacion(true);
+            if(TextUtils.isEmpty(edtNombre.getText().toString())){
+                Toasty.info(this, R.string.nombre_es_requerido, Toasty.LENGTH_SHORT).show();
+                return;
             }
+
+            if(TextUtils.isEmpty(edtTelefono.getText().toString())){
+                Toasty.info(this, R.string.telefono_es_requerido, Toasty.LENGTH_SHORT).show();
+                return;
+            }
+
+            if(TextUtils.isEmpty(edtDireccion.getText().toString())){
+                Toasty.info(this, R.string.direccion_es_requerido, Toasty.LENGTH_SHORT).show();
+                return;
+            }
+
+            if(!hayImagenSolicitud){
+                Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
+                return;
+            }
+            checkAndRequestLocationPermission(true);
         });
-
-
-
-
 
 
         // OBTENER IMAGEN DE LA CAMARA
@@ -290,12 +262,13 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                     if (result.getResultCode() == RESULT_OK) {
 
                         if(estadoSolicitud){
-                            photoBitmapSolicitud = BitmapFactory.decodeFile(currentPhotoPath);
+
+                            photoBitmapSolicitud = correctImageOrientation(currentPhotoPath);
                             hayImagenSolicitud = true;
                             imgFotoSolicitud.setImageBitmap(photoBitmapSolicitud);
 
                         }else{
-                            photoBitmapDenuncia = BitmapFactory.decodeFile(currentPhotoPath);
+                            photoBitmapDenuncia = correctImageOrientation(currentPhotoPath);
                             hayImagenDenuncia = true;
                             imgFotoDenuncia.setImageBitmap(photoBitmapDenuncia);
                         }
@@ -303,6 +276,18 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                 }
         );
 
+
+        requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+            if (isGranted) {
+                // Permiso concedido
+                //getLocation();
+            } else {
+                // Permiso denegado
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    showPermissionDeniedDialog();
+                }
+            }
+        });
 
 
         // BOTON PARA DENUNCIAS
@@ -314,40 +299,89 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
 
             closeKeyboard();
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        LOCATION_PERMISSION_REQUEST_CODE);
-            } else {
-
-                // VERIFICAR ENTRADAS DE TEXTOS
-                if(TextUtils.isEmpty(edtNotaDenuncia.getText().toString())){
-                    Toasty.info(this, R.string.nota_es_requerida, Toasty.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if(!hayImagenDenuncia) {
-                    Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
-                    return;
-                }
-
-                obtenerLocalizacion(false);
+            // VERIFICAR ENTRADAS DE TEXTOS
+            if(TextUtils.isEmpty(edtNotaDenuncia.getText().toString())){
+                Toasty.info(this, R.string.nota_es_requerida, Toasty.LENGTH_SHORT).show();
+                return;
             }
+
+            if(!hayImagenDenuncia) {
+                Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
+                return;
+            }
+
+            checkAndRequestLocationPermission(false);
         });
     }
 
-    // MOSTRAR VISTA PARA SOLICITUD
-    private void mostrarVistaSolicitud(){
-        constraintDenuncia.setVisibility(View.GONE);
-        constraintSolicitud.setVisibility(View.VISIBLE);
+
+    private void checkAndRequestLocationPermission(boolean vista) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                showPermissionExplanationDialog(Manifest.permission.ACCESS_FINE_LOCATION);
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+        } else {
+            // Permiso ya concedido
+            getLastLocation(vista);
+        }
     }
 
 
-    // MOSTRAR VISTA PARA DENUNCIA
-    private void mostrarVistaDenuncia(){
-        constraintSolicitud.setVisibility(View.GONE);
-        constraintDenuncia.setVisibility(View.VISIBLE);
+    private void showPermissionExplanationDialog(String permission) {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la localización para continuar. Por favor, acepta el permiso para continuar.")
+                .setPositiveButton("Aceptar", (dialog, which) -> requestPermissionLauncher.launch(permission))
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+
+    private void showPermissionDeniedDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la localización. Por favor, habilita el permiso en la configuración de la aplicación.")
+                .setPositiveButton("Ir a ajustes", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", getPackageName(), null));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+
+    // ORIENTA CORRECTAMENTE EN VERTICAL FOTO TOMADA CON CAMARA
+    private Bitmap correctImageOrientation(String photoPath) {
+        Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+        try {
+            ExifInterface exif = new ExifInterface(photoPath);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+            Matrix matrix = new Matrix();
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.postRotate(90);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.postRotate(180);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.postRotate(270);
+                    break;
+                default:
+                    break;
+            }
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
     }
 
     // ABRE DIALOGO PARA MOSTRAR SI QUIERE ABRIR CAMARA O GALERIA DE FOTOS
@@ -384,21 +418,34 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
         }
     }
 
-
-    // VERIFICA PERMISO Y ABRE LA CAMARA
-    @AfterPermissionGranted(CAMERA_PERMISSION_CODE)
+    // VERIFICAR SI TIENE PERMISO CAMARA PARA ABRIR
     private void verificarPermisoCamara() {
-        String[] perms = {Manifest.permission.CAMERA};
-        if (EasyPermissions.hasPermissions(this, perms)) {
 
-            openCamera();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+                showPermissionExplanationCamara(Manifest.permission.CAMERA, PERMISSION_REQUEST_CAMERA);
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        PERMISSION_REQUEST_CAMERA);
+            }
         } else {
-            EasyPermissions.requestPermissions(this, getString(R.string.esta_aplicacion_camara),
-                    CAMERA_PERMISSION_CODE, perms);
+            openCamera();
         }
     }
 
-
+    // SINO ACEPTA PERMISO DE CAMARA, MOSTRAR DIALOGO QUE DEBE ABILITARLO
+    private void showPermissionExplanationCamara(String permission, int requestCode) {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso de camara. Por favor, acepta el permiso para continuar.")
+                .setPositiveButton("Aceptar", (dialog, which) -> ActivityCompat.requestPermissions(TalaArbolActivity.this,
+                        new String[]{permission}, requestCode))
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
 
     // ABRIR CAMARA YA CON PERMISO AUTORIZADO
     private void openCamera() {
@@ -416,7 +463,7 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
             Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
             cameraLauncher.launch(cameraIntent);
-           // startActivityForResult(cameraIntent, 169);
+            // startActivityForResult(cameraIntent, 169);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -424,114 +471,119 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
     }
 
 
-   /* @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    // VERIFICA SI TENEMOS PERMISO DE GALERIA ACTIVO
+    private void verificarPermisoGaleria() {
 
-        if(requestCode == 169 && resultCode == RESULT_OK){
-
-            photoBitmapDenuncia = BitmapFactory.decodeFile(currentPhotoPath);
-            imgFotoDenuncia.setImageBitmap(photoBitmapDenuncia);
-            hayImagenDenuncia = true;
-        }
-
-    }*/
-
-    // SEGUN CUANDO AUTORICE EL PERMISO, ABRIRA CAMARA O GALERIA
-    @Override
-    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            openCamera();
-        }
-        else if (requestCode == GALERIA_PERMISSION_CODE) {
-            abrirGaleria();
-        }
-    }
-
-    // SI LOS PERMISOS FUERON DENEGADOS, SE MOSTRARA EL CARTEL DE PERMISO DENEGADO
-    @Override
-    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
-        if (requestCode == CAMERA_PERMISSION_CODE ) {
-            if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-                new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.permiso_requerido))
-                        .setMessage(getString(R.string.permiso_camara_ajustes))
-                        .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
-                        .setNegativeButton(getString(R.string.cancelar), null)
-                        .create()
-                        .show();
-            } else {
-                Toast.makeText(this, getString(R.string.permiso_denegado), Toast.LENGTH_SHORT).show();
-            }
-        }
-        else if (requestCode == GALERIA_PERMISSION_CODE ) {
-            if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-                new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.permiso_requerido))
-                        .setMessage(getString(R.string.permiso_galeria_ajustes))
-                        .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
-                        .setNegativeButton(getString(R.string.cancelar), null)
-                        .create()
-                        .show();
-            } else {
-                Toast.makeText(this, getString(R.string.permiso_denegado), Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-
-
-    // VERIFICADOR DE PERMISOS PARA ABRIR GALERIA
-    private void verificarPermisoGaleria(){
-        if (sdkVersion >= Build.VERSION_CODES.TIRAMISU) {
-            // El dispositivo ejecuta Android 13 o superior.
-
-            if(!allPermissionResultCheck()){
-
-                if(ContextCompat.checkSelfPermission(this, requiredPermission[0]) == PackageManager.PERMISSION_GRANTED){
-                    is_storage_image_permitted = true;
-                } else{
-                    request_permission_launcher_storage_image.launch(requiredPermission[0]);
+        // Verificar y solicitar permisos según la versión de Android
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                    != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_MEDIA_IMAGES)) {
+                    showPermissionExplicacionGaleria(Manifest.permission.READ_MEDIA_IMAGES, PERMISSION_REQUEST_READ_MEDIA_IMAGES);
+                } else {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.READ_MEDIA_IMAGES},
+                            PERMISSION_REQUEST_READ_MEDIA_IMAGES);
                 }
-
-            }else{
-                // aqui ya puede abrir galeria
-
-                abrirGaleria();
+            } else {
+                openGallery();
             }
-
         } else {
-            // El dispositivo no ejecuta Android 13.
-            String[] perms = {android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
-
-            if(EasyPermissions.hasPermissions(this,
-                    perms)){
-                // permiso autorizado
-
-                // aqui ya puede abrir galeria
-
-                abrirGaleria();
-
-            }else{
-                // permiso denegado
-                EasyPermissions.requestPermissions(this,
-                        getString(R.string.esta_aplicacion_galeria),
-                        GALERIA_PERMISSION_CODE,
-                        perms);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    showPermissionExplicacionGaleria(Manifest.permission.READ_EXTERNAL_STORAGE, PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+                } else {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+                }
+            } else {
+                openGallery();
             }
         }
     }
 
+    // REDIRECCIONA A PERMISOS GALERIA PARA ACTIVARLO MANUALMENTE
+    private void showPermissionExplicacionGaleria(String permission, int requestCode) {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la galería. Por favor, acepta el permiso para continuar.")
+                .setPositiveButton("Aceptar", (dialog, which) -> ActivityCompat.requestPermissions(TalaArbolActivity.this,
+                        new String[]{permission}, requestCode))
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
 
 
-    // ABRIR GALERIA YA CON PERMISOS
-    private void abrirGaleria(){
+    // SOLICITA LOS PERMISOS YA SEA DE GALERIA O CAMARA, Y SI ESTA ACEPTADO LLAMAR A UN METODO
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if ((requestCode == PERMISSION_REQUEST_READ_MEDIA_IMAGES || requestCode == PERMISSION_REQUEST_READ_EXTERNAL_STORAGE)) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGallery();
+            } else {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
+                    showPermissionDeniedDialogGaleria();
+                }
+            }
+        }else if (requestCode == PERMISSION_REQUEST_CAMERA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
+                    showPermissionDeniedDialogCamara();
+                }
+            }
+        }
+    }
 
+    // DECIRLE AL USUARIO QUE HABILITE EL PERMISO GALERIA MANUALMENTE
+    private void showPermissionDeniedDialogGaleria() {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la galería. Por favor, habilita los permisos en la configuración de la aplicación.")
+                .setPositiveButton("Ir a ajustes", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", getPackageName(), null));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+
+    // DECIRLE AL USUARIO QUE HABILITE EL PERMISO CAMARA MANUALMENTE
+    private void showPermissionDeniedDialogCamara() {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la camara. Por favor, habilita los permisos en la configuración de la aplicación.")
+                .setPositiveButton("Ir a ajustes", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", getPackageName(), null));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+
+    // YA CON PERMISO ACEPTADO, ABRIR GALERIA
+    private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
         launcherGaleria.launch(intent);
     }
 
-    // OBTENER YA LA IMAGEN DE GALERIA
+
     ActivityResultLauncher<Intent> launcherGaleria = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -540,67 +592,100 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                     Intent data = result.getData();
                     if (data != null) {
                         Uri imageUri = data.getData();
-
                         try {
-                            // Obtener el Bitmap de la imagen seleccionada
+
+                            // se enviar al servidor
                             InputStream imageStream = getContentResolver().openInputStream(imageUri);
 
-                          if(estadoSolicitud){ // vista solicitud
+                            if(estadoSolicitud){ // vista solicitud
+
                                 photoBitmapSolicitud = BitmapFactory.decodeStream(imageStream);
+                                photoBitmapSolicitud = rotateImageIfRequired(this, photoBitmapSolicitud, imageUri);
                                 hayImagenSolicitud = true;
 
                                 Glide.with(this)
-                                      .load(photoBitmapSolicitud)
-                                      .apply(opcionesGlide)
-                                      .into(imgFotoSolicitud);
+                                        .load(photoBitmapSolicitud)
+                                        .apply(opcionesGlide)
+                                        .into(imgFotoSolicitud);
 
                             }else{ // vista denuncia
-                              photoBitmapDenuncia = BitmapFactory.decodeStream(imageStream);
-                              hayImagenDenuncia = true;
+                                photoBitmapDenuncia = BitmapFactory.decodeStream(imageStream);
+                                photoBitmapDenuncia = rotateImageIfRequired(this, photoBitmapDenuncia, imageUri);
+                                hayImagenDenuncia = true;
 
-                              Glide.with(this)
-                                      .load(photoBitmapDenuncia)
-                                      .apply(opcionesGlide)
-                                      .into(imgFotoDenuncia);
+                                Glide.with(this)
+                                        .load(photoBitmapDenuncia)
+                                        .apply(opcionesGlide)
+                                        .into(imgFotoDenuncia);
                             }
 
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
 
+
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
     );
 
-    private final ActivityResultLauncher<String> request_permission_launcher_storage_image =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(),
-                    isGranted-> {
-                        if(isGranted){
-                            is_storage_image_permitted = true;
-                        }else{
-                            is_storage_image_permitted = false;
-
-                            new AlertDialog.Builder(this)
-                                    .setTitle(getString(R.string.permiso_requerido))
-                                    .setMessage(getString(R.string.permiso_galeria_ajustes))
-                                    .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
-                                    .setNegativeButton(getString(R.string.cancelar), (dialog, which) -> {
-                                        Toast.makeText(this, getString(R.string.permiso_denegado), Toast.LENGTH_SHORT).show();
-                                    })
-                                    .create()
-                                    .show();
-                        }
-                    });
-
-    // ******** END - PERMISOS (ABRIR GALERIA) ANDROID 13 O SUPERIOR *********
 
 
 
+    // ROTAR IMAGEN SI ES NECESARIO
+    private Bitmap rotateImageIfRequired(Context context, Bitmap img, Uri selectedImage) throws IOException {
+        ExifInterface ei;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            InputStream input = context.getContentResolver().openInputStream(selectedImage);
+            ei = new ExifInterface(input);
+        } else {
+            String path = getPathFromUri(context, selectedImage);
+            ei = new ExifInterface(path);
+        }
+
+        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return rotateImage(img, 90);
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return rotateImage(img, 180);
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return rotateImage(img, 270);
+            default:
+                return img;
+        }
+    }
+
+    // PARA ROTAR IMAGEN
+    private Bitmap rotateImage(Bitmap img, int degree) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degree);
+        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
+        img.recycle();
+        return rotatedImg;
+    }
+
+
+    // URI DE IMAGEN
+    private String getPathFromUri(Context context, Uri uri) {
+        Cursor cursor = null;
+        try {
+            String[] proj = { MediaStore.Images.Media.DATA };
+            cursor = context.getContentResolver().query(uri, proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
 
     // OBTENER LOCALIZACION PARA DENUNCIAS
     @SuppressLint("MissingPermission")
-    private void obtenerLocalizacion(boolean tipoSolicitud) {
+    private void getLastLocation(boolean tipoSolicitud) {
 
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, location -> {
@@ -613,7 +698,6 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
                         }else{
                             apiEnviarDatosDenuncia();
                         }
-
                     } else {
 
                         if(tipoSolicitud){
@@ -818,37 +902,6 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
     }
 
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-            } else {
-                alertDialogoPermiso();
-            }
-        }
-    }
-
-    private void alertDialogoPermiso(){
-        new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.permiso_requerido))
-                .setMessage(getString(R.string.permiso_lozalizacion_ajustes))
-                .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
-                .setNegativeButton(getString(R.string.cancelar), null)
-                .create()
-                .show();
-    }
-
-    private void openAppSettings() {
-        Intent intent = new Intent();
-        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", getPackageName(), null);
-        intent.setData(uri);
-        startActivity(intent);
-    }
 
 
     private void closeKeyboard() {
@@ -859,4 +912,20 @@ public class TalaArbolActivity extends AppCompatActivity implements EasyPermissi
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
+
+
+    // MOSTRAR VISTA PARA SOLICITUD
+    private void mostrarVistaSolicitud(){
+        constraintDenuncia.setVisibility(View.GONE);
+        constraintSolicitud.setVisibility(View.VISIBLE);
+    }
+
+
+    // MOSTRAR VISTA PARA DENUNCIA
+    private void mostrarVistaDenuncia(){
+        constraintSolicitud.setVisibility(View.GONE);
+        constraintDenuncia.setVisibility(View.VISIBLE);
+    }
+
+
 }

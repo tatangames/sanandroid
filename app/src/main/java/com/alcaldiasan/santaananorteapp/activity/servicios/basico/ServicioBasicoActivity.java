@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -20,7 +21,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputFilter;
-import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -30,12 +30,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -61,72 +59,40 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MultipartBody;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
-public class ServicioBasicoActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
+public class ServicioBasicoActivity extends AppCompatActivity {
 
 
     // ENVIO DE SERVICIOS BASICOS
 
     private int idServicio = 0;
 
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    // PARA PERMISO DE LOCALIZACION
     private FusedLocationProviderClient fusedLocationClient;
 
-    private TextView txtToolbar, tituloServicio;
+    private TextView txtToolbar;
     private ImageView imgFlechaAtras, imgFoto;
-
     private TextInputEditText edtNota;
-
     private KAlertDialog loadingDialog;
-
     private boolean bottomSheetImagen = false, hayImagen = false,
             boolSeguroEnviarDatos = true;
-
-
-    // PERMISOS PARA CAMARA Y GALERIA
-
-    // Estos son codigo cualquiera para verificar permisos
-    private static final int CAMERA_PERMISSION_CODE = 101;
-    private static final int GALERIA_PERMISSION_CODE = 102;
-
-    private final int sdkVersion = Build.VERSION.SDK_INT;
-
-    private ActivityResultLauncher<Intent> cameraLauncher;
-
-
-    // ******** PERMISOS (ABRIR GALERIA) ANDROID 13 O SUPERIOR *********
-
-    private final String[] requiredPermission = new String[]{
-            Manifest.permission.READ_MEDIA_IMAGES,
-    };
-
-    private boolean is_storage_image_permitted = false;
-
-    private boolean allPermissionResultCheck() {
-        return is_storage_image_permitted;
-    }
-
     // COORDENADAS GPS
     private double latitudGPS = 0;
     private double longitudGPS = 0;
 
     private ApiService service;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
-
     private ProgressBar progressBar;
     private RelativeLayout rootRelative;
-
     private TokenManager tokenManager;
 
+    // BITMAP FOTO QUE SE ENVIA
     private Bitmap bitmapFoto = null;
 
     private RequestOptions opcionesGlide = new RequestOptions()
@@ -136,7 +102,19 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
             .priority(Priority.NORMAL);
 
 
+    // PATH DE FOTO TEMPORAL AL TOMAR FOTOGRAFIA CON CAMARA
     private String currentPhotoPath;
+    // INTENT PARA LA CAMARA
+    private ActivityResultLauncher<Intent> cameraLauncher;
+
+
+    // NUMERO DE PERMISOS PARA CADA UNA DE LAS FUNCIONES
+    private static final int REQUEST_CODE_OPEN_GALLERY = 1;
+    private static final int PERMISSION_REQUEST_READ_MEDIA_IMAGES = 2;
+    private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 3;
+    private static final int PERMISSION_REQUEST_CAMERA = 5;
+
+    private ActivityResultLauncher<String> requestPermissionLauncher;
 
 
     @Override
@@ -149,21 +127,15 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         edtNota = findViewById(R.id.edtNota);
         imgFoto = findViewById(R.id.imgFoto);
         rootRelative = findViewById(R.id.rootRelative);
-        tituloServicio = findViewById(R.id.tituloServicio);
 
+        // DATOS RECIBIDOS DE PANTALLA ANTERIOR
         if (getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
             String titulo = bundle.getString("KEY_TITULO");
             txtToolbar.setText(titulo);
             idServicio = bundle.getInt("KEY_IDSERVICIO");
-
-            String textoServicio = bundle.getString("KEY_NOTA");
-
-            // DESCRIPCION DE ESTA PANTALLA
-            if (!TextUtils.isEmpty(textoServicio)) {
-                tituloServicio.setText(textoServicio);
-            }
         }
+
 
         int colorProgress = ContextCompat.getColor(this, R.color.barraProgreso);
         tokenManager = TokenManager.getInstance(getSharedPreferences("prefs", MODE_PRIVATE));
@@ -176,11 +148,12 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         progressBar.setVisibility(View.GONE);
 
 
-        // LIMITAR CARACTERES
+        // LIMITAR CARACTERES AL INPUT NOTA
         InputFilter[] filterArray = new InputFilter[1];
         filterArray[0] = new InputFilter.LengthFilter(1000);
         edtNota.setFilters(filterArray);
 
+        // SALIR DE PANTALLA
         imgFlechaAtras.setOnClickListener(v -> {
             finish();
         });
@@ -188,6 +161,7 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
         // OBTENER LOCALIZACION
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        // ABRIR OPCIONES PARA GALERIA O CAMARA
         imgFoto.setOnClickListener(v -> {
             abrirBottomDialog();
         });
@@ -198,40 +172,123 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
             closeKeyboard();
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        LOCATION_PERMISSION_REQUEST_CODE);
-            } else {
-
-                if (!hayImagen) {
-                    Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
-                    return;
-                }
-
-                getLastLocation();
+            if (!hayImagen) {
+                Toasty.info(this, getString(R.string.seleccionar_imagen), Toasty.LENGTH_SHORT).show();
+                return;
             }
+
+            checkAndRequestLocationPermission();
         });
 
-        /*cameraLauncher = registerForActivityResult(
+        // INTENT DE CAMARA PARA ABRIR LA CAMARA
+        cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        bitmapFoto = BitmapFactory.decodeFile(currentPhotoPath);
+
+                        bitmapFoto = correctImageOrientation(currentPhotoPath);
                         hayImagen = true;
                         imgFoto.setImageBitmap(bitmapFoto);
                     }
                 }
-        );*/
+        );
+
+
+        requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+            if (isGranted) {
+                // Permiso concedido
+                //getLocation();
+            } else {
+                // Permiso denegado
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    showPermissionDeniedDialog();
+                }
+            }
+        });
     }
 
 
-    private static final int REQUEST_CODE_OPEN_GALLERY = 1;
-    private static final int PERMISSION_REQUEST_READ_MEDIA_IMAGES = 2;
-    private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 3;
+    private void checkAndRequestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                showPermissionExplanationDialog(Manifest.permission.ACCESS_FINE_LOCATION);
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+        } else {
+            // Permiso ya concedido
+            getLastLocation();
+        }
+    }
 
 
+
+    private void showPermissionExplanationDialog(String permission) {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la localización para continuar. Por favor, acepta el permiso para continuar.")
+                .setPositiveButton("Aceptar", (dialog, which) -> requestPermissionLauncher.launch(permission))
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+
+    private void showPermissionDeniedDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la localización. Por favor, habilita el permiso en la configuración de la aplicación.")
+                .setPositiveButton("Ir a ajustes", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", getPackageName(), null));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+
+
+
+
+
+
+
+
+
+    // ORIENTA CORRECTAMENTE EN VERTICAL FOTO TOMADA CON CAMARA
+    private Bitmap correctImageOrientation(String photoPath) {
+        Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+        try {
+            ExifInterface exif = new ExifInterface(photoPath);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+            Matrix matrix = new Matrix();
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.postRotate(90);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.postRotate(180);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.postRotate(270);
+                    break;
+                default:
+                    break;
+            }
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+
+
+    // ABRIR DIALOGO PARA SOLICITAR ABRIR CAMARA O GALERIA
     private void abrirBottomDialog() {
         if (!bottomSheetImagen) {
             bottomSheetImagen = true;
@@ -242,7 +299,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
 
             Button btnCamara = bottomSheetProgreso.findViewById(R.id.btnCamara);
             Button btnGaleria = bottomSheetProgreso.findViewById(R.id.btnGaleria);
-
 
             btnCamara.setOnClickListener(v -> {
                 bottomSheetProgreso.dismiss();
@@ -265,23 +321,38 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     }
 
 
-    @AfterPermissionGranted(CAMERA_PERMISSION_CODE)
+    // VERIFICAR SI TIENE PERMISO CAMARA PARA ABRIR
     private void verificarPermisoCamara() {
-        String[] perms = {Manifest.permission.CAMERA};
-        if (EasyPermissions.hasPermissions(this, perms)) {
 
-            openCamera();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+                showPermissionExplanationCamara(Manifest.permission.CAMERA, PERMISSION_REQUEST_CAMERA);
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        PERMISSION_REQUEST_CAMERA);
+            }
         } else {
-            EasyPermissions.requestPermissions(this, getString(R.string.esta_aplicacion_camara),
-                    CAMERA_PERMISSION_CODE, perms);
+            openCamera();
         }
     }
 
+    // SINO ACEPTA PERMISO DE CAMARA, MOSTRAR DIALOGO QUE DEBE ABILITARLO
+    private void showPermissionExplanationCamara(String permission, int requestCode) {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso de camara. Por favor, acepta el permiso para continuar.")
+                .setPositiveButton("Aceptar", (dialog, which) -> ActivityCompat.requestPermissions(ServicioBasicoActivity.this,
+                        new String[]{permission}, requestCode))
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+
     // YA CON PERMISO, ABRIRA CAMARA
     private void openCamera() {
-       /* Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraLauncher.launch(cameraIntent);*/
-
 
         String fileName = "photo";
         File storageDirectory = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -303,213 +374,118 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
     }
 
 
-    @Override
-    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            openCamera();
-        } else if (requestCode == GALERIA_PERMISSION_CODE) {
-            abrirGaleria();
-        }
-    }
-
-
-    @Override
-    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-                new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.permiso_requerido))
-                        .setMessage(getString(R.string.permiso_camara_ajustes))
-                        .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
-                        .setNegativeButton(getString(R.string.cancelar), null)
-                        .create()
-                        .show();
-            } else {
-                Toast.makeText(this, getString(R.string.permiso_denegado), Toast.LENGTH_SHORT).show();
-            }
-        } else if (requestCode == GALERIA_PERMISSION_CODE) {
-            if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-                new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.permiso_requerido))
-                        .setMessage(getString(R.string.permiso_galeria_ajustes))
-                        .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
-                        .setNegativeButton(getString(R.string.cancelar), null)
-                        .create()
-                        .show();
-            } else {
-                Toast.makeText(this, getString(R.string.permiso_denegado), Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-
+    // VERIFICA SI TENEMOS PERMISO DE GALERIA ACTIVO
     private void verificarPermisoGaleria() {
 
         // Verificar y solicitar permisos según la versión de Android
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
                     != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_MEDIA_IMAGES},
-                        PERMISSION_REQUEST_READ_MEDIA_IMAGES);
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_MEDIA_IMAGES)) {
+                    showPermissionExplicacionGaleria(Manifest.permission.READ_MEDIA_IMAGES, PERMISSION_REQUEST_READ_MEDIA_IMAGES);
+                } else {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.READ_MEDIA_IMAGES},
+                            PERMISSION_REQUEST_READ_MEDIA_IMAGES);
+                }
             } else {
                 openGallery();
             }
         } else {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    showPermissionExplicacionGaleria(Manifest.permission.READ_EXTERNAL_STORAGE, PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+                } else {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+                }
             } else {
                 openGallery();
             }
         }
+    }
 
-
-        /*if (sdkVersion >= Build.VERSION_CODES.TIRAMISU) {
-            // El dispositivo ejecuta Android 13 o superior.
-
-            if(!allPermissionResultCheck()){
-
-                if(ContextCompat.checkSelfPermission(this, requiredPermission[0]) == PackageManager.PERMISSION_GRANTED){
-                    is_storage_image_permitted = true;
-                } else{
-                    request_permission_launcher_storage_image.launch(requiredPermission[0]);
-                }
-
-            }else{
-                // aqui ya puede abrir galeria
-
-                abrirGaleria();
-            }
-
-        } else {
-            // El dispositivo no ejecuta Android 13.
-            String[] perms = {android.Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
-
-            if(EasyPermissions.hasPermissions(this,
-                    perms)){
-                // permiso autorizado
-                // aqui ya puede abrir galeria
-
-                abrirGaleria();
-
-            }else{
-                // permiso denegado
-                EasyPermissions.requestPermissions(this,
-                        getString(R.string.esta_aplicacion_galeria),
-                        GALERIA_PERMISSION_CODE,
-                        perms);
-            }
-        }*/
-
-
+    // REDIRECCIONA A PERMISOS GALERIA PARA ACTIVARLO MANUALMENTE
+    private void showPermissionExplicacionGaleria(String permission, int requestCode) {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la galería. Por favor, acepta el permiso para continuar.")
+                .setPositiveButton("Aceptar", (dialog, which) -> ActivityCompat.requestPermissions(ServicioBasicoActivity.this,
+                        new String[]{permission}, requestCode))
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
     }
 
 
 
-    private static final int REQUEST_CODE_PERMISSIONS = 1001;
-   // private static final int PICK_IMAGE = 1;
-
-
+    // SOLICITA LOS PERMISOS YA SEA DE GALERIA O CAMARA, Y SI ESTA ACEPTADO LLAMAR A UN METODO
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST_READ_MEDIA_IMAGES) {
+        if ((requestCode == PERMISSION_REQUEST_READ_MEDIA_IMAGES || requestCode == PERMISSION_REQUEST_READ_EXTERNAL_STORAGE)) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openGallery();
             } else {
-                // Permiso denegado, manejar la situación
-            }
-        } else if (requestCode == PERMISSION_REQUEST_READ_EXTERNAL_STORAGE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openGallery();
-            } else {
-                // Permiso denegado, manejar la situación
-            }
-        }
-    }
-
-    private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.setType("image/*");
-        startActivityForResult(intent, REQUEST_CODE_OPEN_GALLERY);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_OPEN_GALLERY && resultCode == RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
-            // Manejar la imagen seleccionada
-
-
-                try {
-
-                    InputStream imageStream = getContentResolver().openInputStream(selectedImage);
-                    bitmapFoto = BitmapFactory.decodeStream(imageStream);
-                    bitmapFoto = rotateImageIfRequired(this, bitmapFoto, selectedImage);
-
-                    hayImagen = true;
-
-                    Glide.with(this)
-                            .load(bitmapFoto)
-                            .apply(opcionesGlide)
-                            .into(imgFoto);
-
-
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
+                    showPermissionDeniedDialogGaleria();
                 }
-
-
-
-
-
-
-
-
-        }
-    }
-
-
-
-    private void checkPermissionsAndOpenGallery() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
-        } else {
-            abrirGaleria();
-        }
-    }
-
-   /* @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            }
+        }else if (requestCode == PERMISSION_REQUEST_CAMERA) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                abrirGaleria();
+                openCamera();
             } else {
-                // El permiso fue denegado. Muestra un mensaje al usuario.
-                Toast.makeText(this, "Permiso denegado para leer el almacenamiento", Toast.LENGTH_SHORT).show();
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
+                    showPermissionDeniedDialogCamara();
+                }
             }
         }
-    }*/
+    }
 
+    // DECIRLE AL USUARIO QUE HABILITE EL PERMISO GALERIA MANUALMENTE
+    private void showPermissionDeniedDialogGaleria() {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la galería. Por favor, habilita los permisos en la configuración de la aplicación.")
+                .setPositiveButton("Ir a ajustes", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", getPackageName(), null));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
 
+    // DECIRLE AL USUARIO QUE HABILITE EL PERMISO CAMARA MANUALMENTE
+    private void showPermissionDeniedDialogCamara() {
+        new AlertDialog.Builder(this)
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la camara. Por favor, habilita los permisos en la configuración de la aplicación.")
+                .setPositiveButton("Ir a ajustes", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", getPackageName(), null));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
 
-
-
-
-    // YA CON PERMISO ABRIRA GALERIA
-    private void abrirGaleria() {
+    // YA CON PERMISO ACEPTADO, ABRIR GALERIA
+    private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
         launcherGaleria.launch(intent);
     }
+
+
 
     ActivityResultLauncher<Intent> launcherGaleria = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -525,13 +501,14 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                             InputStream imageStream = getContentResolver().openInputStream(imageUri);
                             bitmapFoto = BitmapFactory.decodeStream(imageStream);
                             bitmapFoto = rotateImageIfRequired(this, bitmapFoto, imageUri);
-
                             hayImagen = true;
 
                             Glide.with(this)
                                     .load(bitmapFoto)
                                     .apply(opcionesGlide)
                                     .into(imgFoto);
+
+
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -539,106 +516,6 @@ public class ServicioBasicoActivity extends AppCompatActivity implements EasyPer
                 }
             }
     );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private final ActivityResultLauncher<String> request_permission_launcher_storage_image =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(),
-                    isGranted-> {
-                        if(isGranted){
-                            is_storage_image_permitted = true;
-                        }else{
-                            is_storage_image_permitted = false;
-
-                            new AlertDialog.Builder(this)
-                                    .setTitle(getString(R.string.permiso_requerido))
-                                    .setMessage(getString(R.string.permiso_galeria_ajustes))
-                                    .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
-                                    .setNegativeButton(getString(R.string.cancelar), (dialog, which) -> {
-                                        Toast.makeText(this, getString(R.string.permiso_denegado), Toast.LENGTH_SHORT).show();
-                                    })
-                                    .create()
-                                    .show();
-                        }
-                    });
-
-    // ******** END - PERMISOS (ABRIR GALERIA) ANDROID 13 O SUPERIOR *********
-
-
-   /*@Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation();
-            } else {
-                alertDialogoPermiso();
-            }
-        }
-    }*/
-
-
-    // DIALOGO CUANDO NO ACEPTER PERMISOS DE UBICACION
-    private void alertDialogoPermisoUbicacion(){
-        new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.permiso_requerido))
-                .setMessage(getString(R.string.permiso_lozalizacion_ajustes))
-                .setPositiveButton(getString(R.string.ajustes), (dialog, which) -> openAppSettings())
-                .setNegativeButton(getString(R.string.cancelar), null)
-                .create()
-                .show();
-    }
-
-
-    // ABRIR AJUSTES
-    private void openAppSettings() {
-        Intent intent = new Intent();
-        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", getPackageName(), null);
-        intent.setData(uri);
-        startActivity(intent);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

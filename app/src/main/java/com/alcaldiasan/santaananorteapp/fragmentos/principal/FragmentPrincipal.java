@@ -5,7 +5,9 @@ import static android.content.Context.MODE_PRIVATE;
 import static androidx.browser.customtabs.CustomTabsClient.getPackageName;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -13,6 +15,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -22,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -66,6 +70,10 @@ public class FragmentPrincipal extends Fragment {
 
     // VERSION DE LA APLICACION
     private int versionApp = -1;
+
+    // SOLICITAR PERMISO LOCALIZACION
+    private static final int PERMISSION_REQUEST_LOCATION = 100;
+
 
 
     // FORMA PARA MOSTRAR AL USUARIO SI HAY UN NUEVO TIPO SERVICIO Y QUE ACTUALICE APLICACION
@@ -122,6 +130,67 @@ public class FragmentPrincipal extends Fragment {
     }
 
 
+
+
+    private void checkAndRequestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+               // dialogo que necesita aceptar permiso
+            } else {
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERMISSION_REQUEST_LOCATION);
+            }
+        } else {
+            // Permiso ya concedido
+        }
+    }
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_LOCATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // ya con permiso
+            } else {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), permissions[0])) {
+                    showPermissionDeniedDialog();
+                }
+            }
+        }
+    }
+
+    private void showPermissionDeniedDialog() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Permiso requerido")
+                .setMessage("Esta aplicación necesita acceso a la localización. Por favor, habilita el permiso en la configuración de la aplicación.")
+                .setPositiveButton("Ir a ajustes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", getContext().getPackageName(), null));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create()
+                .show();
+    }
+
+
+
+
     // CUANDO INICIA SE SOLICITARA LOS DATOS
     private void apiSolicitarDatos(){
 
@@ -156,6 +225,8 @@ public class FragmentPrincipal extends Fragment {
                                     int hayUpdate = apiRespuesta.getCodeandroid();
 
                                     esperarInicio(hayUpdate);
+
+                                    checkAndRequestLocationPermission();
                                 }
                                 else{
                                     mensajeSinConexion();
