@@ -77,5 +77,9 @@
     <string name="dui_es_requerido">DUI es requerido</string>
     <string name="ocultado">Ocultado</string>
     <string name="no_hay_solicitudes">No hay Solicitudes</string>
+    <string name="verifica">Verifica: %1$s!</string>
+
+
+
 
 </resources>

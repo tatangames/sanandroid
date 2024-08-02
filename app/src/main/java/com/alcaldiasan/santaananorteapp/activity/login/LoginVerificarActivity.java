@@ -1,24 +1,15 @@
 package com.alcaldiasan.santaananorteapp.activity.login;
 
 
-import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.provider.Telephony;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -26,10 +17,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedDispatcher;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.alcaldiasan.santaananorteapp.R;
@@ -54,11 +43,10 @@ public class LoginVerificarActivity extends AppCompatActivity implements Message
     private TokenManager tokenManager;
     private RelativeLayout rootRelative;
     private CountDownTimer countDownTimer;
-    private ConstraintLayout vistaContraint;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private ApiService service;
 
-    private TextView txtReintento;
+    private TextView txtReintento, textoVerificar;
     private int segundos = 0;
     private String telefono = "";
     private boolean puedeResetearCronometro = false;
@@ -67,7 +55,6 @@ public class LoginVerificarActivity extends AppCompatActivity implements Message
     private ImageView imgFlechaAtras;
 
 
-    private static final int READ_SMS_PERMISSION_CODE = 1;
 
     private String oneSignalId = null;
 
@@ -79,15 +66,17 @@ public class LoginVerificarActivity extends AppCompatActivity implements Message
 
         codeEditText = findViewById(R.id.codeEditText);
         txtReintento = findViewById(R.id.txtContador);
-        vistaContraint = findViewById(R.id.vistaConstraint);
         rootRelative = findViewById(R.id.root);
         imgFlechaAtras = findViewById(R.id.imageView);
+        textoVerificar = findViewById(R.id.textoVerificar);
 
         if (getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
             segundos = bundle.getInt("KEY_SEGUNDOS");
             telefono = bundle.getString("KEY_PHONE");
             oneSignalId = bundle.getString("KEY_FCM");
+
+            textoVerificar.setText(getString(R.string.verifica, telefono));
         }
 
         tokenManager = TokenManager.getInstance(getSharedPreferences("prefs", MODE_PRIVATE));
